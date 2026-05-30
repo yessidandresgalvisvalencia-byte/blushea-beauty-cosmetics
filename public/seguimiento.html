@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Seguimiento | Blushéa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>BLUSHÉA</h1>
+    <span>Seguimiento de pedido</span>
+  </div>
+
+  <nav class="nav">
+    <a href="/">Inicio</a>
+  </nav>
+</header>
+
+<main class="tracking-page">
+  <div id="seguimientoPedido"></div>
+</main>
+
+<script>
+
+async function cargarSeguimiento() {
+
+  const contenedor =
+    document.getElementById("seguimientoPedido");
+
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const id = params.get("id");
+
+  try {
+
+    let respuesta =
+      await fetch(`/api/pedidos/${id}`);
+
+    let pedido =
+      await respuesta.json();
+
+    if (!respuesta.ok) {
+
+      const ventasRespuesta =
+        await fetch("/api/ventas");
+
+      const ventas =
+        await ventasRespuesta.json();
+
+      pedido =
+        ventas.find(
+          v => String(v.id) === String(id)
+        );
+
+      if (!pedido) {
+
+        contenedor.innerHTML = `
+          <div class="empty-state">
+            <h3>Pedido no encontrado</h3>
+            <p>
+              Puede que ya haya sido eliminado
+              o no exista.
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+    }
+
+    const estados = [
+      "Pendiente",
+      "Empacando",
+      "Enviado",
+      "Entregado"
+    ];
+
+    contenedor.innerHTML = `
+      <section class="tracking-card">
+
+        <h2>
+          Pedido #${pedido.id}
+        </h2>
+
+        <p>
+          <strong>Cliente:</strong>
+          ${pedido.cliente.nombre}
+        </p>
+
+        <p>
+          <strong>Total:</strong>
+          $${pedido.total.toLocaleString("es-CO")} COP
+        </p>
+
+        <div class="tracking-steps">
+
+          ${estados.map(estado => `
+
+            <div class="
+              tracking-step
+              ${estados.indexOf(estado)
+                <= estados.indexOf(pedido.estado)
+                ? "active"
+                : ""}
+            ">
+
+              ${estado}
+
+            </div>
+
+          `).join("")}
+
+        </div>
+
+        <p class="tracking-status">
+
+          Estado actual:
+          <strong>${pedido.estado}</strong>
+
+        </p>
+
+        <a
+          class="buy-detail-button"
+          href="/recibo.html?id=${pedido.id}"
+          target="_blank"
+        >
+          Descargar recibo
+        </a>
+
+      </section>
+    `;
+
+  } catch (error) {
+
+    console.error(error);
+
+    contenedor.innerHTML = `
+      <div class="empty-state">
+        <h3>Error cargando seguimiento</h3>
+        <p>
+          Revisa que el servidor esté encendido.
+        </p>
+      </div>
+    `;
+
+  }
+
+}
+
+cargarSeguimiento();
+
+setInterval(
+  cargarSeguimiento,
+  5000
+);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1780020011948,
+    "nombre": "Corrector Blomshell",
+    "categoria": "Rostro",
+    "precio": 20000,
+    "stock": 30,
+    "descripcion": "bonito",
+    "tieneTonos": false,
+    "tonos": [],
+    "imagen": "/uploads/1780020011943-OIP.webp"
+  },
+  {
+    "id": 1780071062817,
+    "nombre": "pestañina ",
+    "categoria": "Ojos",
+    "precio": 80000,
+    "stock": 100,
+    "descripcion": "qq",
+    "tieneTonos": true,
+    "tonos": [
+      "1",
+      "2"
+    ],
+    "imagen": "/uploads/1780071062815-OIP.webp"
+  }
+]

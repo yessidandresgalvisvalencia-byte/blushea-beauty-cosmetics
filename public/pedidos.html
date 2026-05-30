@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pedidos | Blushéa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>BLUSHÉA</h1>
+    <span>Panel de pedidos</span>
+  </div>
+
+  <nav class="nav">
+    <a href="/admin.html">Productos</a>
+    <a href="/">Tienda</a>
+  </nav>
+</header>
+
+<main class="orders-page">
+  <h2>Pedidos recibidos</h2>
+  <div id="listaPedidos"></div>
+</main>
+
+<script>
+async function cargarPedidos() {
+  const contenedor = document.getElementById("listaPedidos");
+
+  const respuesta = await fetch("/api/pedidos");
+  const pedidos = await respuesta.json();
+
+  contenedor.innerHTML = "";
+
+  if (!pedidos.length) {
+    contenedor.innerHTML = `
+      <div class="empty-state">
+        <h3>No hay pedidos todavía</h3>
+      </div>
+    `;
+    return;
+  }
+
+  pedidos.reverse().forEach((pedido) => {
+    contenedor.innerHTML += `
+      <article class="order-card">
+        <div class="order-header">
+          <h3>Pedido #${pedido.id}</h3>
+          <span>${pedido.estado}</span>
+        </div>
+
+        <p><strong>Fecha:</strong> ${pedido.fecha}</p>
+        <p><strong>Cliente:</strong> ${pedido.cliente.nombre}</p>
+        <p><strong>Teléfono:</strong> ${pedido.cliente.telefono}</p>
+        <p><strong>Dirección:</strong> ${pedido.cliente.direccion}, ${pedido.cliente.barrio}, Medellín</p>
+
+        <h4>Productos</h4>
+
+        ${pedido.productos.map(p => `
+          <div class="order-product">
+            <img src="${p.imagen}">
+            <div>
+              <strong>${p.nombre}</strong>
+              ${p.tono ? `<p>Tono: ${p.tono}</p>` : ""}
+              <p>Cantidad: ${p.cantidad}</p>
+              <p>$${(p.precio * p.cantidad).toLocaleString("es-CO")} COP</p>
+            </div>
+          </div>
+        `).join("")}
+
+        <div class="order-total">
+          <p><strong>Subtotal:</strong> $${pedido.subtotal.toLocaleString("es-CO")} COP</p>
+          <p><strong>Envío:</strong> $${pedido.envio.toLocaleString("es-CO")} COP</p>
+          <p><strong>Total:</strong> $${pedido.total.toLocaleString("es-CO")} COP</p>
+        </div>
+
+        <select onchange="cambiarEstado(${pedido.id}, this.value)">
+          <option value="Pendiente" ${pedido.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
+          <option value="Empacando" ${pedido.estado === "Empacando" ? "selected" : ""}>Empacando</option>
+          <option value="Enviado" ${pedido.estado === "Enviado" ? "selected" : ""}>Enviado</option>
+          <option value="Entregado" ${pedido.estado === "Entregado" ? "selected" : ""}>Entregado</option>
+        </select>
+      </article>
+    `;
+  });
+}
+
+async function cambiarEstado(id, estado) {
+  await fetch(`/api/pedidos/${id}/estado`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ estado })
+  });
+
+  cargarPedidos();
+}
+
+cargarPedidos();
+setInterval(cargarPedidos, 5000);
+</script>
+
+</body>
+</html>

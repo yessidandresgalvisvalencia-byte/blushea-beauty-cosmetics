@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producto | Blushéa Beauty Cosmetics</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>BLUSHÉA</h1>
+    <span>Beauty Cosmetics</span>
+  </div>
+
+  <nav class="nav">
+  <a href="/">Inicio</a>
+  <a href="/#productos">Productos</a>
+  <a href="/carrito.html" class="cart-link">Carrito</a>
+</nav>
+</header>
+
+<main class="product-detail-page" id="detalleProducto"></main>
+
+<script>
+async function cargarDetalleProducto() {
+  const contenedor = document.getElementById("detalleProducto");
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  try {
+    const respuesta = await fetch("/api/productos");
+    const productos = await respuesta.json();
+
+    const producto = productos.find(p => String(p.id) === String(id));
+
+    if (!producto) {
+      contenedor.innerHTML = `
+        <section class="empty-state detail-empty">
+          <h3>Producto no encontrado</h3>
+          <p>Regresa al catálogo y selecciona otro producto.</p>
+          <a href="/#productos" class="btn-primary">Volver al catálogo</a>
+        </section>
+      `;
+      return;
+    }
+
+    const imagen = producto.imagen && producto.imagen.trim() !== ""
+      ? producto.imagen
+      : "https://via.placeholder.com/700x700?text=Blushea";
+
+    const tonosHTML = producto.tieneTonos && producto.tonos && producto.tonos.length > 0
+      ? `
+        <div class="detail-tones">
+          <h3>Tonos disponibles</h3>
+          <div class="tone-list" id="listaTonos">
+            ${producto.tonos.map(tono => `<button type="button" class="tone-button">${tono}</button>`).join("")}
+          </div>
+        </div>
+      `
+      : "";
+
+    contenedor.innerHTML = `
+      <section class="detail-layout">
+
+        <div class="detail-gallery">
+          <img src="${imagen}" alt="${producto.nombre}">
+        </div>
+
+        <div class="detail-info">
+          <span class="detail-category">${producto.categoria}</span>
+
+          <h1>${producto.nombre}</h1>
+
+          <div class="detail-price">
+            $${Number(producto.precio).toLocaleString("es-CO")} COP
+          </div>
+
+          <div class="${producto.stock > 0 ? "stock-ok" : "stock-out"}">
+            ${producto.stock > 0 ? `Disponible · ${producto.stock} unidades` : "Producto agotado"}
+          </div>
+
+          <div class="detail-description">
+            <h3>Descripción</h3>
+            <p>${producto.descripcion}</p>
+          </div>
+
+          ${tonosHTML}
+
+          <div class="quantity-box">
+            <span>Cantidad</span>
+
+            <div class="quantity-control">
+              <button type="button" id="menosCantidad">-</button>
+              <strong id="cantidadProducto">1</strong>
+              <button type="button" id="masCantidad">+</button>
+            </div>
+          </div>
+
+          <div class="delivery-box">
+            <h3>Pedir a domicilio</h3>
+
+            <input type="text" id="nombreCliente" placeholder="Nombre completo">
+            <input type="text" id="telefonoCliente" placeholder="Teléfono">
+            <input type="text" id="direccionCliente" placeholder="Dirección de entrega">
+            <input type="text" id="barrioCliente" placeholder="Barrio">
+
+            <button type="button" id="calcularEnvioBtn">
+              Calcular envío
+            </button>
+
+            <div id="resultadoEnvio" class="delivery-result"></div>
+          </div>
+
+          <a 
+            id="botonComprarDetalle"
+            class="buy-detail-button"
+            href="#"
+            target="_blank"
+          >
+            agregar al carrito 
+          </a>
+
+          <a href="/#productos" class="back-link">
+            Volver al catálogo
+          </a>
+
+        </div>
+
+      </section>
+    `;
+
+    activarPedido(producto);
+
+  } catch (error) {
+    console.error("Error cargando detalle:", error);
+
+    contenedor.innerHTML = `
+      <section class="empty-state detail-empty">
+        <h3>Error cargando producto</h3>
+        <p>Revisa que el servidor esté encendido.</p>
+      </section>
+    `;
+  }
+}
+
+function activarPedido(producto) {
+  const menos = document.getElementById("menosCantidad");
+  const mas = document.getElementById("masCantidad");
+  const cantidadTexto = document.getElementById("cantidadProducto");
+  const botonComprar = document.getElementById("botonComprarDetalle");
+  const calcularEnvioBtn = document.getElementById("calcularEnvioBtn");
+  const resultadoEnvio = document.getElementById("resultadoEnvio");
+
+  const nombreCliente = document.getElementById("nombreCliente");
+  const telefonoCliente = document.getElementById("telefonoCliente");
+  const direccionCliente = document.getElementById("direccionCliente");
+  const barrioCliente = document.getElementById("barrioCliente");
+  const ciudadCliente = "Medellín";
+
+  let cantidad = 1;
+  let tonoSeleccionado = "";
+  let valorEnvio = 0;
+  let distanciaKm = 0;
+  let totalPedido = Number(producto.precio);
+
+ const botonesTono = document.querySelectorAll(".tone-button");
+
+function agregarAlCarrito() {
+
+  const carrito = JSON.parse(
+    localStorage.getItem("carritoBlushea")
+  ) || [];
+
+  carrito.push({
+
+    id: producto.id,
+
+    nombre: producto.nombre,
+
+    precio: Number(producto.precio),
+
+    imagen: producto.imagen,
+
+    cantidad,
+
+    tono: tonoSeleccionado
+
+  });
+
+  localStorage.setItem(
+    "carritoBlushea",
+    JSON.stringify(carrito)
+  );
+
+  window.location.href = "/carrito.html";
+}
+
+botonComprar.addEventListener(
+  "click",
+  agregarAlCarrito
+);
+
+botonesTono.forEach((boton) => {
+
+  boton.addEventListener("click", () => {
+
+    botonesTono.forEach(b =>
+      b.classList.remove("tone-selected")
+    );
+
+    boton.classList.add("tone-selected");
+
+    tonoSeleccionado = boton.textContent;
+
+    actualizarWhatsapp();
+
+  });
+
+});
+
+function actualizarTotales() {
+
+  const subtotal =
+    Number(producto.precio) * cantidad;
+
+  totalPedido = subtotal + valorEnvio;
+
+}
+
+function actualizarWhatsapp() {
+
+  actualizarTotales();
+
+}
+
+menos.addEventListener("click", () => {
+
+  if (cantidad > 1) {
+
+    cantidad--;
+
+    cantidadTexto.textContent = cantidad;
+
+    actualizarWhatsapp();
+
+  }
+
+});
+
+calcularEnvioBtn.addEventListener("click", async () => {
+
+  const direccion = direccionCliente.value
+    .trim()
+    .replace("#", " número ")
+    .replace("No.", " número ")
+    .replace("N°", " número ");
+
+  const barrio = barrioCliente.value.trim();
+
+  if (!direccion || !barrio) {
+
+    resultadoEnvio.innerHTML = `
+      <p class="delivery-error">
+        Escribe dirección y barrio para calcular el envío.
+      </p>
+    `;
+
+    return;
+  }
+
+  resultadoEnvio.innerHTML = `
+    <p>Calculando envío...</p>
+  `;
+
+  try {
+
+    const respuesta = await fetch(
+      "/api/calcular-envio",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          direccion,
+          barrio,
+          ciudad: ciudadCliente
+        })
+      }
+    );
+
+    const resultado = await respuesta.json();
+
+    if (!respuesta.ok) {
+
+      resultadoEnvio.innerHTML = `
+        <p class="delivery-error">
+          ${resultado.mensaje || "No se pudo calcular el envío."}
+        </p>
+      `;
+
+      return;
+    }
+
+    valorEnvio = Number(resultado.valorEnvio);
+
+    distanciaKm = Number(resultado.distanciaKm);
+
+    actualizarTotales();
+
+    resultadoEnvio.innerHTML = `
+      <div class="delivery-summary">
+
+        <p>
+          <strong>Envío:</strong>
+          $${valorEnvio.toLocaleString("es-CO")} COP
+        </p>
+
+        <p>
+          <strong>Total pedido:</strong>
+          $${totalPedido.toLocaleString("es-CO")} COP
+        </p>
+
+      </div>
+    `;
+
+    actualizarWhatsapp();
+
+  } catch (error) {
+
+    console.error(error);
+
+    resultadoEnvio.innerHTML = `
+      <p class="delivery-error">
+        Error conectando con el servidor.
+      </p>
+    `;
+
+  }
+
+});
+
+[nombreCliente,
+ telefonoCliente,
+ direccionCliente,
+ barrioCliente].forEach(input => {
+
+  input.addEventListener(
+    "input",
+    actualizarWhatsapp
+  );
+
+});
+
+function actualizarTotales() {
+
+  const subtotal =
+    Number(producto.precio) * cantidad;
+
+  totalPedido = subtotal + valorEnvio;
+
+}
+
+function actualizarWhatsapp() {
+
+  actualizarTotales();
+
+}
+
+menos.onclick = () => {
+
+  if (cantidad > 1) {
+
+    cantidad = cantidad - 1;
+
+    cantidadTexto.textContent = cantidad;
+
+    actualizarWhatsapp();
+
+  }
+
+};
+
+mas.onclick = () => {
+
+  cantidad = cantidad + 1;
+
+  cantidadTexto.textContent = cantidad;
+
+  actualizarWhatsapp();
+
+};
+
+actualizarWhatsapp();
+
+ calcularEnvioBtn.addEventListener("click", async () => {
+
+  const direccion = direccionCliente.value
+    .trim()
+    .replace("#", " número ")
+    .replace("No.", " número ")
+    .replace("N°", " número ");
+
+  const barrio = barrioCliente.value.trim();
+
+  if (!direccion || !barrio) {
+
+    resultadoEnvio.innerHTML = `
+      <p class="delivery-error">
+        Escribe dirección y barrio para calcular el envío.
+      </p>
+    `;
+
+    return;
+  }
+
+  resultadoEnvio.innerHTML = `
+    <p>Calculando envío...</p>
+  `;
+
+  try {
+
+    const respuesta = await fetch("/api/calcular-envio", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        direccion,
+        barrio,
+        ciudad: ciudadCliente
+      })
+    });
+
+    const resultado = await respuesta.json();
+
+    if (!respuesta.ok) {
+
+      resultadoEnvio.innerHTML = `
+        <p class="delivery-error">
+          ${resultado.mensaje || "No se pudo calcular el envío."}
+        </p>
+      `;
+
+      return;
+    }
+
+    valorEnvio = Number(resultado.valorEnvio);
+    distanciaKm = Number(resultado.distanciaKm);
+
+    actualizarTotales();
+
+    resultadoEnvio.innerHTML = `
+  <div class="delivery-summary">
+
+    <p>
+      <strong>Envío:</strong>
+      $${valorEnvio.toLocaleString("es-CO")} COP
+    </p>
+
+    <p>
+      <strong>Total pedido:</strong>
+      $${totalPedido.toLocaleString("es-CO")} COP
+    </p>
+
+  </div>
+`;
+
+actualizarWhatsapp();
+
+} catch (error) {
+
+  console.error(error);
+
+  resultadoEnvio.innerHTML = `
+    <p class="delivery-error">
+      Error conectando con el servidor.
+    </p>
+  `;
+}
+
+});
+  [nombreCliente, telefonoCliente, direccionCliente, barrioCliente].forEach(input => {
+    input.addEventListener("input", actualizarWhatsapp);
+  });
+
+  actualizarWhatsapp();
+}
+
+cargarDetalleProducto();
+</script>
+
+</body>
+</html>

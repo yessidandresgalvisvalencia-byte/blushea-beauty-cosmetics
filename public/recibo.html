@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Recibo | Blushéa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="receipt-body">
+
+  <main class="receipt-wrapper">
+    <div id="reciboCompra"></div>
+
+    <button onclick="window.print()" class="print-button">
+      Descargar / Imprimir PDF
+    </button>
+  </main>
+
+<script>
+async function cargarRecibo() {
+  const contenedor = document.getElementById("reciboCompra");
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  try {
+    const respuesta = await fetch(`/api/pedidos/${id}`);
+    let pedido = await respuesta.json();
+
+    if (!respuesta.ok) {
+      const ventasRespuesta = await fetch("/api/ventas");
+      const ventas = await ventasRespuesta.json();
+
+      pedido = ventas.find(v => String(v.id) === String(id));
+
+      if (!pedido) {
+        contenedor.innerHTML = `
+          <div class="receipt-ticket">
+            <h2>Pedido no encontrado</h2>
+          </div>
+        `;
+        return;
+      }
+    }
+
+    contenedor.innerHTML = `
+      <section class="receipt-ticket">
+
+        <h1>BLUSHÉA</h1>
+        <h2>BEAUTY COSMETICS</h2>
+
+        <div class="receipt-line"></div>
+
+        <p><strong>Pedido:</strong> #${pedido.id}</p>
+        <p><strong>Fecha:</strong> ${pedido.fecha}</p>
+        <p><strong>Cliente:</strong> ${pedido.cliente.nombre}</p>
+        <p><strong>Tel:</strong> ${pedido.cliente.telefono}</p>
+        <p><strong>Dirección:</strong> ${pedido.cliente.direccion}</p>
+        <p><strong>Barrio:</strong> ${pedido.cliente.barrio}, Medellín</p>
+
+        <div class="receipt-line"></div>
+
+        ${pedido.productos.map(p => `
+          <div class="receipt-product">
+            <p><strong>${p.nombre}</strong></p>
+            ${p.tono ? `<p>Tono: ${p.tono}</p>` : ""}
+            <p>Cantidad: ${p.cantidad}</p>
+            <p class="receipt-price">$${(p.precio * p.cantidad).toLocaleString("es-CO")} COP</p>
+          </div>
+        `).join("")}
+
+        <div class="receipt-line"></div>
+
+        <div class="receipt-total">
+          <p><span>Subtotal:</span> <strong>$${pedido.subtotal.toLocaleString("es-CO")} COP</strong></p>
+          <p><span>Envío:</span> <strong>$${pedido.envio.toLocaleString("es-CO")} COP</strong></p>
+          <p class="receipt-grand-total">
+            <span>TOTAL:</span>
+            <strong>$${pedido.total.toLocaleString("es-CO")} COP</strong>
+          </p>
+        </div>
+
+        <div class="receipt-line"></div>
+
+        <p><strong>Estado:</strong> ${pedido.estado}</p>
+
+        <p class="receipt-thanks">
+          Gracias por tu compra
+        </p>
+
+      </section>
+    `;
+
+  } catch (error) {
+    contenedor.innerHTML = `
+      <div class="receipt-ticket">
+        <h2>Error cargando recibo</h2>
+      </div>
+    `;
+  }
+}
+
+cargarRecibo();
+</script>
+
+</body>
+</html>

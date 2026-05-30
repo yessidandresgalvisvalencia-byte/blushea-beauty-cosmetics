@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blushéa Beauty Cosmetics</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>BLUSHÉA</h1>
+    <span>Beauty Cosmetics</span>
+  </div>
+
+  <nav class="nav">
+  <a href="#inicio">Inicio</a>
+  <a href="#productos">Productos</a>
+  <a href="#contacto">Contacto</a>
+  <a href="/carrito.html" class="cart-link">Carrito</a>
+</nav>
+</header>
+
+<section class="hero" id="inicio">
+  <div class="hero-content">
+    <span class="eyebrow">Beauty Boutique</span>
+    <h2>Maquillaje, skincare y glow en un solo lugar</h2>
+    <p>
+      Blushéa Beauty Cosmetics reúne productos seleccionados para una rutina de belleza moderna,
+      elegante y confiable.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#productos" class="btn-primary">Ver catálogo</a>
+      <a href="#contacto" class="btn-secondary">Comprar por WhatsApp</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="floating-card">
+      <span>Nueva colección</span>
+      <h3>Glow Essentials</h3>
+      <p>Labios · Rostro · Ojos · Skincare</p>
+    </div>
+  </div>
+</section>
+
+<section class="catalog" id="productos">
+  <div class="catalog-header">
+    <span class="eyebrow">Catálogo</span>
+    <h2>Productos disponibles</h2>
+    <p>Explora productos cargados desde el panel administrativo.</p>
+  </div>
+
+  <div class="catalog-tools">
+    <input 
+      type="text" 
+      id="buscadorProductos" 
+      placeholder="Buscar producto, marca o categoría..."
+    >
+
+    <select id="filtroCategoria">
+      <option value="Todos">Todas las categorías</option>
+      <option value="Labios">Labios</option>
+      <option value="Rostro">Rostro</option>
+      <option value="Ojos">Ojos</option>
+      <option value="Skincare">Skincare</option>
+      <option value="Brochas">Brochas</option>
+      <option value="Accesorios">Accesorios</option>
+      <option value="Corporal">Corporal</option>
+      <option value="Capilar">Capilar</option>
+    </select>
+  </div>
+
+  <div class="product-grid" id="listaProductos"></div>
+</section>
+
+<section class="benefits">
+  <article>
+    <h3>Compra fácil</h3>
+    <p>Consulta disponibilidad y compra directamente por WhatsApp.</p>
+  </article>
+
+  <article>
+    <h3>Catálogo visual</h3>
+    <p>Productos organizados con fotos, descripción, precio, stock y tonos.</p>
+  </article>
+
+  <article>
+    <h3>Asesoría beauty</h3>
+    <p>Ideal para recomendar productos según necesidad, tono o estilo.</p>
+  </article>
+</section>
+
+<section class="contact" id="contacto">
+  <span class="eyebrow">Contacto</span>
+  <h2>¿Quieres comprar o consultar disponibilidad?</h2>
+  <p>Escríbenos y recibe atención personalizada.</p>
+
+  <a class="whatsapp-main" href="https://wa.me/573001112233" target="_blank">
+    Escribir por WhatsApp
+  </a>
+</section>
+
+<footer class="footer">
+  <p>© 2026 Blushéa Beauty Cosmetics. Todos los derechos reservados.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

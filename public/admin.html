@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin | Blushéa Beauty Cosmetics</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="admin-body">
+
+  <main class="admin-panel">
+
+    <h1>Panel Blushéa</h1>
+    <p>Agrega productos con imagen, precio, categoría, stock, descripción y tonos si aplica.</p>
+
+    <form id="formProducto" class="admin-form">
+
+      <input 
+        type="text" 
+        name="nombre" 
+        placeholder="Nombre del producto" 
+        required
+      >
+
+      <select name="categoria" required>
+        <option value="">Seleccionar categoría</option>
+        <option value="Labios">Labios</option>
+        <option value="Rostro">Rostro</option>
+        <option value="Ojos">Ojos</option>
+        <option value="Skincare">Skincare</option>
+        <option value="Brochas">Brochas</option>
+        <option value="Accesorios">Accesorios</option>
+        <option value="Corporal">Corporal</option>
+        <option value="Capilar">Capilar</option>
+      </select>
+
+      <input 
+        type="number" 
+        name="precio" 
+        placeholder="Precio en COP" 
+        required
+      >
+
+      <input 
+        type="number" 
+        name="stock" 
+        placeholder="Cantidad disponible" 
+        required
+      >
+
+      <textarea 
+        name="descripcion" 
+        placeholder="Descripción del producto" 
+        required
+      ></textarea>
+
+      <div class="tone-box">
+        <label class="tone-title">¿Este producto maneja tonos?</label>
+
+        <div class="tone-options">
+          <label>
+            <input type="radio" name="tieneTonos" value="no" checked>
+            No
+          </label>
+
+          <label>
+            <input type="radio" name="tieneTonos" value="si">
+            Sí
+          </label>
+        </div>
+      </div>
+
+      <div id="tonosContainer" class="tones-container hidden">
+        <label>Tonos disponibles</label>
+
+        <input 
+          type="text" 
+          name="tonos" 
+          placeholder="Ej: Nude, Rosa, Vino, Beige, Honey"
+        >
+
+        <small>
+          Escribe los tonos separados por coma.
+        </small>
+      </div>
+
+      <input 
+        type="file" 
+        name="imagen" 
+        accept="image/*" 
+        required
+      >
+
+      <button type="submit">Guardar producto</button>
+
+    </form>
+
+    <div id="mensaje"></div>
+<section class="admin-products">
+  <h2>Productos agregados</h2>
+  <div id="listaAdminProductos"></div>
+</section>
+  </main>
+
+  <script>
+    const form = document.getElementById("formProducto");
+    const mensaje = document.getElementById("mensaje");
+    const tonosContainer = document.getElementById("tonosContainer");
+    const radiosTonos = document.querySelectorAll("input[name='tieneTonos']");
+
+    radiosTonos.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        const seleccionado = document.querySelector("input[name='tieneTonos']:checked").value;
+
+        if (seleccionado === "si") {
+          tonosContainer.classList.remove("hidden");
+        } else {
+          tonosContainer.classList.add("hidden");
+          form.tonos.value = "";
+        }
+      });
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const datos = new FormData(form);
+
+      try {
+        const respuesta = await fetch("/api/productos", {
+          method: "POST",
+          body: datos
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+          mensaje.innerHTML = `<p class="error">${resultado.mensaje || "Error guardando producto"}</p>`;
+          return;
+        }
+
+        mensaje.innerHTML = `<p class="success">${resultado.mensaje}</p>`;
+        form.reset();
+        tonosContainer.classList.add("hidden");
+
+      } catch (error) {
+        mensaje.innerHTML = `<p class="error">Error de conexión con el servidor</p>`;
+      }
+    });
+    async function cargarProductosAdmin() {
+  const contenedor = document.getElementById("listaAdminProductos");
+
+  if (!contenedor) return;
+
+  const respuesta = await fetch("/api/productos");
+  const productos = await respuesta.json();
+
+  contenedor.innerHTML = "";
+
+  if (!productos.length) {
+    contenedor.innerHTML = "<p>No hay productos agregados todavía.</p>";
+    return;
+  }
+
+  productos.forEach((producto) => {
+    contenedor.innerHTML += `
+      <div class="admin-product-card">
+        <img src="${producto.imagen}" alt="${producto.nombre}">
+
+        <div>
+          <h3>${producto.nombre}</h3>
+          <p>${producto.categoria}</p>
+          <strong>$${Number(producto.precio).toLocaleString("es-CO")} COP</strong>
+        </div>
+
+        <button onclick="eliminarProducto(${producto.id})">
+          Eliminar
+        </button>
+      </div>
+    `;
+  });
+}
+
+async function eliminarProducto(id) {
+  const confirmar = confirm("¿Seguro que quieres eliminar este producto?");
+
+  if (!confirmar) return;
+
+  const respuesta = await fetch(`/api/productos/${id}`, {
+    method: "DELETE"
+  });
+
+  const resultado = await respuesta.json();
+
+  mensaje.innerHTML = `<p class="success">${resultado.mensaje}</p>`;
+
+  cargarProductosAdmin();
+}
+
+cargarProductosAdmin();
+  </script>
+
+</body>
+</html>

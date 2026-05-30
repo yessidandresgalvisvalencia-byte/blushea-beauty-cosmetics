@@ -1,0 +1,114 @@
+[
+  {
+    "id": 1780067233377,
+    "fecha": "29/5/2026, 10:07:13 a. m.",
+    "cliente": {
+      "nombre": "yessid",
+      "telefono": "3106150402",
+      "direccion": "calle 89 a #72-3",
+      "barrio": "castilla",
+      "ciudad": "Medellín"
+    },
+    "productos": [
+      {
+        "id": 1780067106773,
+        "nombre": "pestañina ",
+        "precio": 15000,
+        "imagen": "/uploads/1780067106762-ChatGPT-Image-19-may-2026,-01_39_36-p.m..png",
+        "cantidad": 1,
+        "tono": ""
+      }
+    ],
+    "subtotal": 15000,
+    "envio": 10500,
+    "total": 25500,
+    "estado": "Entregado",
+    "fechaEntregado": "29/5/2026, 10:25:39 a. m."
+  },
+  {
+    "id": 1780068479798,
+    "fecha": "29/5/2026, 10:27:59 a. m.",
+    "cliente": {
+      "nombre": "rrrrrr",
+      "telefono": "3106150402",
+      "direccion": "calle 41 # 30 -125",
+      "barrio": "prado",
+      "ciudad": "Medellín"
+    },
+    "productos": [
+      {
+        "id": 1780020011948,
+        "nombre": "Corrector Blomshell",
+        "precio": 20000,
+        "imagen": "/uploads/1780020011943-OIP.webp",
+        "cantidad": 1,
+        "tono": ""
+      }
+    ],
+    "subtotal": 20000,
+    "envio": 4500,
+    "total": 24500,
+    "estado": "Entregado",
+    "fechaEntregado": "29/5/2026, 10:29:07 a. m."
+  },
+  {
+    "id": 1780071179167,
+    "fecha": "29/5/2026, 11:12:59 a. m.",
+    "cliente": {
+      "nombre": "rrrrrr",
+      "telefono": "3106150402",
+      "direccion": "calle 41 # 30 -125",
+      "barrio": "prado",
+      "ciudad": "Medellín"
+    },
+    "productos": [
+      {
+        "id": 1780071062817,
+        "nombre": "pestañina ",
+        "precio": 80000,
+        "imagen": "/uploads/1780071062815-OIP.webp",
+        "cantidad": 1,
+        "tono": ""
+      }
+    ],
+    "subtotal": 80000,
+    "envio": 0,
+    "total": 80000,
+    "estado": "Entregado",
+    "fechaEntregado": "29/5/2026, 11:16:06 a. m."
+  },
+  {
+    "id": 1780070765542,
+    "fecha": "29/5/2026, 11:06:05 a. m.",
+    "cliente": {
+      "nombre": "rrrrrr",
+      "telefono": "3106150402",
+      "direccion": "calle 41 # 30 -125",
+      "barrio": "prado",
+      "ciudad": "Medellín"
+    },
+    "productos": [
+      {
+        "id": 1780067106773,
+        "nombre": "pestañina ",
+        "precio": 15000,
+        "imagen": "/uploads/1780067106762-ChatGPT-Image-19-may-2026,-01_39_36-p.m..png",
+        "cantidad": 1,
+        "tono": ""
+      },
+      {
+        "id": 1780067106773,
+        "nombre": "pestañina ",
+        "precio": 15000,
+        "imagen": "/uploads/1780067106762-ChatGPT-Image-19-may-2026,-01_39_36-p.m..png",
+        "cantidad": 1,
+        "tono": ""
+      }
+    ],
+    "subtotal": 30000,
+    "envio": 0,
+    "total": 30000,
+    "estado": "Entregado",
+    "fechaEntregado": "29/5/2026, 11:16:09 a. m."
+  }
+]

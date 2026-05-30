@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de ventas | Blushéa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>BLUSHÉA</h1>
+    <span>Historial de ventas</span>
+  </div>
+
+  <nav class="nav">
+    <a href="/pedidos.html">Pedidos</a>
+    <a href="/admin.html">Productos</a>
+  </nav>
+</header>
+
+<main class="orders-page">
+  <h2>Productos vendidos</h2>
+  <div id="listaVentas"></div>
+</main>
+
+<script>
+async function cargarVentas() {
+  const contenedor = document.getElementById("listaVentas");
+
+  const respuesta = await fetch("/api/ventas");
+  const ventas = await respuesta.json();
+
+  contenedor.innerHTML = "";
+
+  if (!ventas.length) {
+    contenedor.innerHTML = `
+      <div class="empty-state">
+        <h3>No hay ventas registradas todavía</h3>
+      </div>
+    `;
+    return;
+  }
+
+  ventas.reverse().forEach((venta) => {
+    contenedor.innerHTML += `
+      <article class="order-card">
+        <div class="order-header">
+          <h3>Venta #${venta.id}</h3>
+          <span>Entregado</span>
+        </div>
+
+        <p><strong>Cliente:</strong> ${venta.cliente.nombre}</p>
+        <p><strong>Teléfono:</strong> ${venta.cliente.telefono}</p>
+        <p><strong>Dirección:</strong> ${venta.cliente.direccion}, ${venta.cliente.barrio}</p>
+        <p><strong>Fecha venta:</strong> ${venta.fechaEntregado}</p>
+
+        ${venta.productos.map(p => `
+          <div class="order-product">
+            <img src="${p.imagen}">
+            <div>
+              <strong>${p.nombre}</strong>
+              ${p.tono ? `<p>Tono: ${p.tono}</p>` : ""}
+              <p>Cantidad: ${p.cantidad}</p>
+            </div>
+          </div>
+        `).join("")}
+
+        <div class="order-total">
+          <p><strong>Total:</strong> $${venta.total.toLocaleString("es-CO")} COP</p>
+        </div>
+      </article>
+    `;
+  });
+}
+
+cargarVentas();
+</script>
+
+</body>
+</html>
