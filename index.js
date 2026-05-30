@@ -2,9 +2,15 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const { MercadoPagoConfig, Preference } = require("mercadopago");
 
 const app = express();
 const PORT = 4000;
+const mpClient = new MercadoPagoConfig({
+  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
+});
+
+const preference = new Preference(mpClient);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -297,6 +303,61 @@ app.get("/api/ventas", (req, res) => {
     res.json(ventas);
   } catch (error) {
     res.status(500).json({ mensaje: "Error leyendo ventas" });
+  }
+});
+app.post("/api/crear-pago", async (req, res) => {
+  try {
+    const { pedidoId } = req.body;
+
+    const pedidos = JSON.parse(fs.readFileSync(pedidosPath, "utf8"));
+    const pedido = pedidos.find(p => String(p.id) === String(pedidoId));
+
+    if (!pedido) {
+      return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    }
+
+    const items = pedido.productos.map(producto => ({
+      title: producto.tono
+        ? `${producto.nombre} - Tono ${producto.tono}`
+        : producto.nombre,
+      quantity: Number(producto.cantidad),
+      unit_price: Number(producto.precio),
+      currency_id: "COP"
+    }));
+
+    if (pedido.envio > 0) {
+      items.push({
+        title: "Envío a domicilio",
+        quantity: 1,
+        unit_price: Number(pedido.envio),
+        currency_id: "COP"
+      });
+    }
+
+    const baseUrl = "https://blushea-beauty-cosmetics.onrender.com";
+
+    const response = await preference.create({
+      body: {
+        items,
+        external_reference: String(pedido.id),
+        back_urls: {
+          success: `${baseUrl}/seguimiento.html?id=${pedido.id}`,
+          failure: `${baseUrl}/carrito.html`,
+          pending: `${baseUrl}/seguimiento.html?id=${pedido.id}`
+        },
+        auto_return: "approved"
+      }
+    });
+
+    res.json({
+      init_point: response.init_point
+    });
+
+  } catch (error) {
+    console.error("Error creando pago Mercado Pago:", error);
+    res.status(500).json({
+      mensaje: "Error creando pago en Mercado Pago"
+    });
   }
 });
 app.listen(PORT, () => {

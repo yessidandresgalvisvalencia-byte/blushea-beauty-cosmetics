@@ -124,18 +124,41 @@ document.getElementById("confirmarPedido").addEventListener("click", async () =>
 
   const resultado = await respuesta.json();
 
-  if (!respuesta.ok) {
-    alert(resultado.mensaje || "Error creando pedido");
-    return;
-  }
+if (!respuesta.ok) {
+  alert(resultado.mensaje || "Error creando pedido");
+  return;
+}
 
-  localStorage.removeItem("carritoBlushea");
+const pagoRespuesta = await fetch("/api/crear-pago", {
+  method: "POST",
 
-  const linkSeguimiento = `${window.location.origin}/seguimiento.html?id=${resultado.pedido.id}`;
+  headers: {
+    "Content-Type": "application/json"
+  },
 
-  alert("Pedido creado correctamente. Ahora verás tu link de seguimiento.");
-
-  window.location.href = linkSeguimiento;
+  body: JSON.stringify({
+    pedidoId: resultado.pedido.id
+  })
 });
 
+const pago = await pagoRespuesta.json();
+
+if (!pagoRespuesta.ok) {
+
+  alert(
+    "Pedido creado, pero no se pudo abrir Mercado Pago."
+  );
+
+  const linkSeguimiento =
+    `${window.location.origin}/seguimiento.html?id=${resultado.pedido.id}`;
+
+  window.location.href = linkSeguimiento;
+
+  return;
+}
+
+localStorage.removeItem("carritoBlushea");
+
+window.location.href = pago.init_point;
+});
 pintarCarrito();
