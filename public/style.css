@@ -993,3 +993,25 @@ a {
     box-shadow: none;
   }
 }
+.admin-links {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.admin-links a {
+  text-align: center;
+  background: #fff0f6;
+  color: #9f315f;
+  padding: 13px;
+  border-radius: 20px;
+  font-weight: 900;
+  text-decoration: none;
+  border: 1px solid #efc5d5;
+}
+
+.admin-links a:hover {
+  background: #9f315f;
+  color: white;
+}
