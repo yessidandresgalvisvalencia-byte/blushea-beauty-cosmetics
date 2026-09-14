@@ -1,113 +1,414 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="Descubre maquillaje, skincare y accesorios seleccionados por Blushéa Beauty Cosmetics."
+  >
+
   <title>Blushéa Beauty Cosmetics</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
 
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <h1>BLUSHÉA</h1>
-    <span>Beauty Cosmetics</span>
-  </div>
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
 
-  <nav class="nav">
-  <a href="#inicio">Inicio</a>
-  <a href="#productos">Productos</a>
-  <a href="#contacto">Contacto</a>
-  <a href="/carrito.html" class="cart-link">Carrito</a>
-</nav>
-</header>
+  <header class="topbar">
 
-<section class="hero" id="inicio">
-  <div class="hero-content">
-    <span class="eyebrow">Beauty Boutique</span>
-    <h2>Maquillaje, skincare y glow en un solo lugar</h2>
-    <p>
-      Blushéa Beauty Cosmetics reúne productos seleccionados para una rutina de belleza moderna,
-      elegante y confiable.
-    </p>
-
-    <div class="hero-actions">
-      <a href="#productos" class="btn-primary">Ver catálogo</a>
-      <a href="#contacto" class="btn-secondary">Comprar por WhatsApp</a>
+    <div class="brand">
+      <h1>BLUSHÉA</h1>
+      <span>Beauty Cosmetics</span>
     </div>
-  </div>
 
-  <div class="hero-visual">
-    <div class="floating-card">
-      <span>Nueva colección</span>
-      <h3>Glow Essentials</h3>
-      <p>Labios · Rostro · Ojos · Skincare</p>
+    <nav class="nav">
+
+      <a href="#inicio">
+        Inicio
+      </a>
+
+      <a href="#productos">
+        Productos
+      </a>
+
+      <a href="#contacto">
+        Contacto
+      </a>
+
+      <a
+        href="/carrito.html"
+        class="cart-link"
+      >
+        Carrito
+        <span
+          id="contadorCarrito"
+          class="cart-count"
+          aria-label="Productos en el carrito"
+        >
+          0
+        </span>
+      </a>
+
+    </nav>
+
+  </header>
+
+
+  <!-- =====================================================
+       HERO
+       ===================================================== -->
+
+  <section
+    class="hero"
+    id="inicio"
+  >
+
+    <div class="hero-content">
+
+      <span class="eyebrow">
+        Beauty Boutique
+      </span>
+
+      <h2>
+        Tu próximo favorito empieza aquí.
+      </h2>
+
+      <p>
+        Maquillaje, skincare y accesorios seleccionados
+        para elevar tu rutina y hacerte sentir increíble
+        todos los días.
+      </p>
+
+      <div class="hero-actions">
+
+        <a
+          href="#productos"
+          class="btn-primary"
+        >
+          Descubrir productos
+        </a>
+
+        <a
+          href="#contacto"
+          class="btn-secondary"
+        >
+          Necesito asesoría
+        </a>
+
+      </div>
+
     </div>
-  </div>
-</section>
 
-<section class="catalog" id="productos">
-  <div class="catalog-header">
-    <span class="eyebrow">Catálogo</span>
-    <h2>Productos disponibles</h2>
-    <p>Explora productos cargados desde el panel administrativo.</p>
-  </div>
 
-  <div class="catalog-tools">
-    <input 
-      type="text" 
-      id="buscadorProductos" 
-      placeholder="Buscar producto, marca o categoría..."
+    <div class="hero-visual">
+
+      <div class="floating-card">
+
+        <span>
+          BLUSHÉA EDIT
+        </span>
+
+        <h3>
+          Beauty Essentials
+        </h3>
+
+        <p>
+          Labios · Rostro · Ojos · Skincare · Accesorios
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       CATÁLOGO
+       ===================================================== -->
+
+  <section
+    class="catalog"
+    id="productos"
+  >
+
+    <div class="catalog-header">
+
+      <span class="eyebrow">
+        The Blushéa Edit
+      </span>
+
+      <h2>
+        Encuentra tu próximo favorito
+      </h2>
+
+      <p>
+        Explora nuestra selección y elige el color
+        que más va contigo.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         BUSCADOR Y FILTROS
+         =================================================== -->
+
+    <div class="catalog-tools">
+
+      <div class="catalog-search">
+
+        <label
+          for="buscadorProductos"
+          class="sr-only"
+        >
+          Buscar productos
+        </label>
+
+        <input
+          type="search"
+          id="buscadorProductos"
+          placeholder="Buscar producto o categoría..."
+          autocomplete="off"
+          maxlength="100"
+        >
+
+      </div>
+
+
+      <div class="catalog-filter">
+
+        <label
+          for="filtroCategoria"
+          class="sr-only"
+        >
+          Filtrar por categoría
+        </label>
+
+        <select id="filtroCategoria">
+
+          <option value="Todos">
+            Todas las categorías
+          </option>
+
+          <option value="Labios">
+            Labios
+          </option>
+
+          <option value="Rostro">
+            Rostro
+          </option>
+
+          <option value="Ojos">
+            Ojos
+          </option>
+
+          <option value="Skincare">
+            Skincare
+          </option>
+
+          <option value="Brochas">
+            Brochas
+          </option>
+
+          <option value="Accesorios">
+            Accesorios
+          </option>
+
+          <option value="Corporal">
+            Corporal
+          </option>
+
+          <option value="Capilar">
+            Capilar
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         RESULTADOS
+         =================================================== -->
+
+    <div
+      id="catalogStatus"
+      class="catalog-status"
+      aria-live="polite"
+    ></div>
+
+
+    <!-- ===================================================
+         PRODUCTOS
+
+         script.js insertará aquí las tarjetas.
+
+         Si el producto tiene variantes:
+
+         Rosado -> foto rosada
+         Negro  -> foto negra
+
+         =================================================== -->
+
+    <div
+      class="product-grid"
+      id="listaProductos"
     >
 
-    <select id="filtroCategoria">
-      <option value="Todos">Todas las categorías</option>
-      <option value="Labios">Labios</option>
-      <option value="Rostro">Rostro</option>
-      <option value="Ojos">Ojos</option>
-      <option value="Skincare">Skincare</option>
-      <option value="Brochas">Brochas</option>
-      <option value="Accesorios">Accesorios</option>
-      <option value="Corporal">Corporal</option>
-      <option value="Capilar">Capilar</option>
-    </select>
-  </div>
+      <div class="empty-state">
 
-  <div class="product-grid" id="listaProductos"></div>
-</section>
+        <h3>
+          Cargando productos...
+        </h3>
 
-<section class="benefits">
-  <article>
-    <h3>Compra fácil</h3>
-    <p>Consulta disponibilidad y compra directamente por WhatsApp.</p>
-  </article>
+        <p>
+          Estamos preparando el catálogo.
+        </p>
 
-  <article>
-    <h3>Catálogo visual</h3>
-    <p>Productos organizados con fotos, descripción, precio, stock y tonos.</p>
-  </article>
+      </div>
 
-  <article>
-    <h3>Asesoría beauty</h3>
-    <p>Ideal para recomendar productos según necesidad, tono o estilo.</p>
-  </article>
-</section>
+    </div>
 
-<section class="contact" id="contacto">
-  <span class="eyebrow">Contacto</span>
-  <h2>¿Quieres comprar o consultar disponibilidad?</h2>
-  <p>Escríbenos y recibe atención personalizada.</p>
+  </section>
 
-  <a class="whatsapp-main" href="https://wa.me/573001112233" target="_blank">
-    Escribir por WhatsApp
-  </a>
-</section>
 
-<footer class="footer">
-  <p>© 2026 Blushéa Beauty Cosmetics. Todos los derechos reservados.</p>
-</footer>
+  <!-- =====================================================
+       BENEFICIOS
+       ===================================================== -->
 
-<script src="script.js"></script>
+  <section class="benefits">
+
+    <article>
+
+      <span class="benefit-number">
+        01
+      </span>
+
+      <h3>
+        Elige tu favorito
+      </h3>
+
+      <p>
+        Explora colores, acabados y opciones directamente
+        desde nuestro catálogo.
+      </p>
+
+    </article>
+
+
+    <article>
+
+      <span class="benefit-number">
+        02
+      </span>
+
+      <h3>
+        Compra fácil
+      </h3>
+
+      <p>
+        Agrega tus productos al carrito y completa tu
+        pedido en pocos pasos.
+      </p>
+
+    </article>
+
+
+    <article>
+
+      <span class="benefit-number">
+        03
+      </span>
+
+      <h3>
+        Sigue tu pedido
+      </h3>
+
+      <p>
+        Consulta el estado de tu compra mientras
+        preparamos tus productos.
+      </p>
+
+    </article>
+
+  </section>
+
+
+  <!-- =====================================================
+       CONTACTO
+       ===================================================== -->
+
+  <section
+    class="contact"
+    id="contacto"
+  >
+
+    <span class="eyebrow">
+      Beauty Assistance
+    </span>
+
+    <h2>
+      ¿No sabes cuál elegir?
+    </h2>
+
+    <p>
+      Escríbenos y te ayudamos a encontrar la opción
+      ideal para ti.
+    </p>
+
+    <a
+      class="whatsapp-main"
+      href="https://wa.me/573001112233"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Hablar con Blushéa
+    </a>
+
+  </section>
+
+
+  <!-- =====================================================
+       FOOTER
+       ===================================================== -->
+
+  <footer class="footer">
+
+    <div class="footer-brand">
+      BLUSHÉA
+    </div>
+
+    <p>
+      © 2026 Blushéa Beauty Cosmetics.
+      Todos los derechos reservados.
+    </p>
+
+  </footer>
+
+
+  <!-- =====================================================
+       JAVASCRIPT DEL CATÁLOGO
+       ===================================================== -->
+
+  <script src="script.js"></script>
+
 </body>
+
 </html>
