@@ -1,209 +1,1305 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Admin | Blushéa Beauty Cosmetics</title>
-  <link rel="stylesheet" href="style.css">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Admin | Blushéa Beauty Cosmetics
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body class="admin-body">
 
+
   <main class="admin-panel">
 
-    <h1>Panel Blushéa</h1>
-    <p>Agrega productos con imagen, precio, categoría, stock, descripción y tonos si aplica.</p>
-<div class="admin-links">
-  <a href="/" target="_blank">Ver catálogo</a>
-  <a href="/carrito.html" target="_blank">Ver carrito</a>
-  <a href="/pedidos.html" target="_blank">Ver pedidos</a>
-  <a href="/ventas.html" target="_blank">Ver historial de ventas</a>
-</div>
-    <form id="formProducto" class="admin-form">
 
-      <input 
-        type="text" 
-        name="nombre" 
-        placeholder="Nombre del producto" 
+    <!-- =====================================================
+         ENCABEZADO
+         ===================================================== -->
+
+    <h1>Panel Blushéa</h1>
+
+    <p>
+      Agrega productos con imagen, precio, categoría,
+      stock, descripción y colores o tonos si aplica.
+    </p>
+
+
+    <!-- =====================================================
+         NAVEGACIÓN ADMIN
+         ===================================================== -->
+
+    <div class="admin-links">
+
+      <a
+        href="/"
+        target="_blank"
+      >
+        Ver catálogo
+      </a>
+
+      <a
+        href="/carrito.html"
+        target="_blank"
+      >
+        Ver carrito
+      </a>
+
+      <a
+        href="/pedidos.html"
+        target="_blank"
+      >
+        Ver pedidos
+      </a>
+
+      <a
+        href="/ventas.html"
+        target="_blank"
+      >
+        Ver historial de ventas
+      </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         FORMULARIO PRODUCTO
+         ===================================================== -->
+
+    <form
+      id="formProducto"
+      class="admin-form"
+      enctype="multipart/form-data"
+    >
+
+
+      <!-- NOMBRE -->
+
+      <input
+        type="text"
+        name="nombre"
+        placeholder="Nombre del producto"
+        autocomplete="off"
         required
       >
 
-      <select name="categoria" required>
-        <option value="">Seleccionar categoría</option>
-        <option value="Labios">Labios</option>
-        <option value="Rostro">Rostro</option>
-        <option value="Ojos">Ojos</option>
-        <option value="Skincare">Skincare</option>
-        <option value="Brochas">Brochas</option>
-        <option value="Accesorios">Accesorios</option>
-        <option value="Corporal">Corporal</option>
-        <option value="Capilar">Capilar</option>
+
+      <!-- CATEGORÍA -->
+
+      <select
+        name="categoria"
+        required
+      >
+
+        <option value="">
+          Seleccionar categoría
+        </option>
+
+        <option value="Labios">
+          Labios
+        </option>
+
+        <option value="Rostro">
+          Rostro
+        </option>
+
+        <option value="Ojos">
+          Ojos
+        </option>
+
+        <option value="Skincare">
+          Skincare
+        </option>
+
+        <option value="Brochas">
+          Brochas
+        </option>
+
+        <option value="Accesorios">
+          Accesorios
+        </option>
+
+        <option value="Corporal">
+          Corporal
+        </option>
+
+        <option value="Capilar">
+          Capilar
+        </option>
+
       </select>
 
-      <input 
-        type="number" 
-        name="precio" 
-        placeholder="Precio en COP" 
+
+      <!-- PRECIO -->
+
+      <input
+        type="number"
+        name="precio"
+        placeholder="Precio en COP"
+        min="1"
+        step="1"
         required
       >
 
-      <input 
-        type="number" 
-        name="stock" 
-        placeholder="Cantidad disponible" 
+
+      <!-- STOCK -->
+
+      <input
+        type="number"
+        name="stock"
+        placeholder="Cantidad disponible"
+        min="0"
+        step="1"
         required
       >
 
-      <textarea 
-        name="descripcion" 
-        placeholder="Descripción del producto" 
+
+      <!-- DESCRIPCIÓN -->
+
+      <textarea
+        name="descripcion"
+        placeholder="Descripción del producto"
+        maxlength="3000"
         required
       ></textarea>
 
+
+      <!-- =====================================================
+           ¿TIENE VARIANTES?
+           ===================================================== -->
+
       <div class="tone-box">
-        <label class="tone-title">¿Este producto maneja tonos?</label>
+
+        <label class="tone-title">
+          ¿Este producto tiene colores o tonos?
+        </label>
+
 
         <div class="tone-options">
-          <label>
-            <input type="radio" name="tieneTonos" value="no" checked>
-            No
-          </label>
 
           <label>
-            <input type="radio" name="tieneTonos" value="si">
-            Sí
+
+            <input
+              type="radio"
+              name="tieneTonos"
+              value="no"
+              checked
+            >
+
+            No
+
           </label>
+
+
+          <label>
+
+            <input
+              type="radio"
+              name="tieneTonos"
+              value="si"
+            >
+
+            Sí
+
+          </label>
+
         </div>
+
       </div>
 
-      <div id="tonosContainer" class="tones-container hidden">
-        <label>Tonos disponibles</label>
 
-        <input 
-          type="text" 
-          name="tonos" 
-          placeholder="Ej: Nude, Rosa, Vino, Beige, Honey"
+      <!-- =====================================================
+           PRODUCTO NORMAL
+           Una sola fotografía
+           ===================================================== -->
+
+      <div id="imagenSimpleContainer">
+
+        <label class="tone-title">
+          Foto principal del producto
+        </label>
+
+        <input
+          type="file"
+          name="imagen"
+          accept="image/jpeg,image/png,image/webp"
+          required
         >
 
         <small>
-          Escribe los tonos separados por coma.
+          Esta será la fotografía que verá la clienta
+          en el catálogo.
         </small>
+
       </div>
 
-      <input 
-        type="file" 
-        name="imagen" 
-        accept="image/*" 
-        required
+
+      <!-- =====================================================
+           PRODUCTO CON VARIANTES
+           Cada color tiene su propia fotografía
+           ===================================================== -->
+
+      <div
+        id="variantesContainer"
+        class="hidden"
       >
 
-      <button type="submit">Guardar producto</button>
+        <label class="tone-title">
+          Colores / tonos disponibles
+        </label>
+
+
+        <p class="variant-help">
+          Agrega cada color por separado y selecciona
+          la fotografía correspondiente.
+        </p>
+
+
+        <div id="listaVariantes"></div>
+
+
+        <button
+          type="button"
+          id="agregarVariante"
+          class="add-variant-button"
+        >
+          + Agregar otro color
+        </button>
+
+      </div>
+
+
+      <!-- =====================================================
+           GUARDAR
+           ===================================================== -->
+
+      <button
+        type="submit"
+        id="botonGuardarProducto"
+      >
+        Guardar producto
+      </button>
+
 
     </form>
 
+
+    <!-- =====================================================
+         MENSAJES
+         ===================================================== -->
+
     <div id="mensaje"></div>
-<section class="admin-products">
-  <h2>Productos agregados</h2>
-  <div id="listaAdminProductos"></div>
-</section>
+
+
+    <!-- =====================================================
+         PRODUCTOS EXISTENTES
+         ===================================================== -->
+
+    <section class="admin-products">
+
+      <h2>
+        Productos agregados
+      </h2>
+
+      <div id="listaAdminProductos"></div>
+
+    </section>
+
+
   </main>
 
+
+
+  <!-- =======================================================
+       JAVASCRIPT
+       ======================================================= -->
+
   <script>
-    const form = document.getElementById("formProducto");
-    const mensaje = document.getElementById("mensaje");
-    const tonosContainer = document.getElementById("tonosContainer");
-    const radiosTonos = document.querySelectorAll("input[name='tieneTonos']");
 
-    radiosTonos.forEach((radio) => {
-      radio.addEventListener("change", () => {
-        const seleccionado = document.querySelector("input[name='tieneTonos']:checked").value;
 
-        if (seleccionado === "si") {
-          tonosContainer.classList.remove("hidden");
-        } else {
-          tonosContainer.classList.add("hidden");
-          form.tonos.value = "";
-        }
-      });
-    });
+    /* =====================================================
+       ELEMENTOS PRINCIPALES
+       ===================================================== */
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    const form =
+      document.getElementById("formProducto");
 
-      const datos = new FormData(form);
+    const mensaje =
+      document.getElementById("mensaje");
 
-      try {
-        const respuesta = await fetch("/api/productos", {
-          method: "POST",
-          body: datos
-        });
+    const botonGuardar =
+      document.getElementById("botonGuardarProducto");
 
-        const resultado = await respuesta.json();
+    const radiosTonos =
+      document.querySelectorAll(
+        "input[name='tieneTonos']"
+      );
 
-        if (!respuesta.ok) {
-          mensaje.innerHTML = `<p class="error">${resultado.mensaje || "Error guardando producto"}</p>`;
-          return;
-        }
+    const imagenSimpleContainer =
+      document.getElementById(
+        "imagenSimpleContainer"
+      );
 
-        mensaje.innerHTML = `<p class="success">${resultado.mensaje}</p>`;
-        form.reset();
-        tonosContainer.classList.add("hidden");
+    const variantesContainer =
+      document.getElementById(
+        "variantesContainer"
+      );
 
-      } catch (error) {
-        mensaje.innerHTML = `<p class="error">Error de conexión con el servidor</p>`;
-      }
-    });
-    async function cargarProductosAdmin() {
-  const contenedor = document.getElementById("listaAdminProductos");
+    const listaVariantes =
+      document.getElementById(
+        "listaVariantes"
+      );
 
-  if (!contenedor) return;
+    const agregarVariante =
+      document.getElementById(
+        "agregarVariante"
+      );
 
-  const respuesta = await fetch("/api/productos");
-  const productos = await respuesta.json();
 
-  contenedor.innerHTML = "";
+    /* =====================================================
+       SEGURIDAD BÁSICA PARA TEXTO MOSTRADO EN HTML
 
-  if (!productos.length) {
-    contenedor.innerHTML = "<p>No hay productos agregados todavía.</p>";
-    return;
-  }
+       Evita insertar directamente texto almacenado
+       dentro de innerHTML.
+       ===================================================== */
 
-  productos.forEach((producto) => {
-    contenedor.innerHTML += `
-      <div class="admin-product-card">
-        <img src="${producto.imagen}" alt="${producto.nombre}">
+    function escaparHTML(valor) {
 
-        <div>
-          <h3>${producto.nombre}</h3>
-          <p>${producto.categoria}</p>
-          <strong>$${Number(producto.precio).toLocaleString("es-CO")} COP</strong>
+      return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* =====================================================
+       CREAR UNA VARIANTE
+       ===================================================== */
+
+    function crearVariante() {
+
+      const cantidadActual =
+        listaVariantes
+          .querySelectorAll(".variant-row")
+          .length;
+
+      const numero =
+        cantidadActual + 1;
+
+
+      const variante =
+        document.createElement("div");
+
+
+      variante.className =
+        "variant-row";
+
+
+      variante.innerHTML = `
+
+        <div class="variant-number">
+          Color ${numero}
         </div>
 
-        <button onclick="eliminarProducto(${producto.id})">
+
+        <input
+          type="text"
+          name="nombresVariantes"
+          placeholder="Ej: Rosa, Negro, Beige..."
+          autocomplete="off"
+          maxlength="80"
+          required
+        >
+
+
+        <input
+          type="file"
+          name="imagenesVariantes"
+          accept="image/jpeg,image/png,image/webp"
+          required
+        >
+
+
+        <button
+          type="button"
+          class="remove-variant-button"
+        >
           Eliminar
         </button>
-      </div>
-    `;
-  });
-}
 
-async function eliminarProducto(id) {
-  const confirmar = confirm("¿Seguro que quieres eliminar este producto?");
+      `;
 
-  if (!confirmar) return;
 
-  const respuesta = await fetch(`/api/productos/${id}`, {
-    method: "DELETE"
-  });
+      const botonEliminar =
+        variante.querySelector(
+          ".remove-variant-button"
+        );
 
-  const resultado = await respuesta.json();
 
-  mensaje.innerHTML = `<p class="success">${resultado.mensaje}</p>`;
+      botonEliminar.addEventListener(
+        "click",
+        () => {
 
-  cargarProductosAdmin();
-}
+          variante.remove();
 
-cargarProductosAdmin();
+          actualizarNumeracionVariantes();
+
+        }
+      );
+
+
+      listaVariantes.appendChild(
+        variante
+      );
+
+    }
+
+
+    /* =====================================================
+       ACTUALIZAR NÚMEROS DE COLORES
+       ===================================================== */
+
+    function actualizarNumeracionVariantes() {
+
+      const variantes =
+        listaVariantes
+          .querySelectorAll(".variant-row");
+
+
+      variantes.forEach(
+        (variante, index) => {
+
+          const numero =
+            variante.querySelector(
+              ".variant-number"
+            );
+
+
+          numero.textContent =
+            `Color ${index + 1}`;
+
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       BOTÓN AGREGAR COLOR
+       ===================================================== */
+
+    agregarVariante.addEventListener(
+      "click",
+      crearVariante
+    );
+
+
+    /* =====================================================
+       CAMBIAR ENTRE PRODUCTO NORMAL Y PRODUCTO
+       CON COLORES / TONOS
+       ===================================================== */
+
+    radiosTonos.forEach(
+      (radio) => {
+
+        radio.addEventListener(
+          "change",
+          () => {
+
+            const seleccionado =
+              document.querySelector(
+                "input[name='tieneTonos']:checked"
+              ).value;
+
+
+            const inputImagenSimple =
+              imagenSimpleContainer
+                .querySelector(
+                  "input[name='imagen']"
+                );
+
+
+            /*
+             * PRODUCTO CON COLORES
+             */
+
+            if (seleccionado === "si") {
+
+              imagenSimpleContainer
+                .classList
+                .add("hidden");
+
+
+              variantesContainer
+                .classList
+                .remove("hidden");
+
+
+              inputImagenSimple.required =
+                false;
+
+
+              /*
+               * Limpiamos una imagen simple que
+               * pudiera haber sido seleccionada antes.
+               */
+
+              inputImagenSimple.value = "";
+
+
+              /*
+               * Cuando seleccionas "Sí",
+               * BLUSHÉA crea automáticamente
+               * dos colores.
+               */
+
+              if (
+                listaVariantes
+                  .querySelectorAll(
+                    ".variant-row"
+                  )
+                  .length === 0
+              ) {
+
+                crearVariante();
+
+                crearVariante();
+
+              }
+
+            }
+
+
+            /*
+             * PRODUCTO NORMAL
+             */
+
+            else {
+
+              imagenSimpleContainer
+                .classList
+                .remove("hidden");
+
+
+              variantesContainer
+                .classList
+                .add("hidden");
+
+
+              inputImagenSimple.required =
+                true;
+
+
+              /*
+               * Quitamos las variantes porque
+               * el administrador cambió a producto
+               * sin colores.
+               */
+
+              listaVariantes.innerHTML =
+                "";
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+    /* =====================================================
+       VALIDAR VARIANTES
+       ===================================================== */
+
+    function validarVariantes() {
+
+      const tieneVariantes =
+        document.querySelector(
+          "input[name='tieneTonos']:checked"
+        ).value === "si";
+
+
+      if (!tieneVariantes) {
+
+        return true;
+
+      }
+
+
+      const variantes =
+        listaVariantes
+          .querySelectorAll(".variant-row");
+
+
+      if (variantes.length === 0) {
+
+        mensaje.innerHTML = `
+
+          <p class="error">
+
+            Debes agregar al menos un color
+            o tono.
+
+          </p>
+
+        `;
+
+        return false;
+
+      }
+
+
+      for (const variante of variantes) {
+
+        const nombre =
+          variante.querySelector(
+            "input[name='nombresVariantes']"
+          );
+
+        const imagen =
+          variante.querySelector(
+            "input[name='imagenesVariantes']"
+          );
+
+
+        if (!nombre.value.trim()) {
+
+          mensaje.innerHTML = `
+
+            <p class="error">
+
+              Todos los colores deben tener
+              un nombre.
+
+            </p>
+
+          `;
+
+          nombre.focus();
+
+          return false;
+
+        }
+
+
+        if (
+          !imagen.files ||
+          imagen.files.length === 0
+        ) {
+
+          mensaje.innerHTML = `
+
+            <p class="error">
+
+              Debes seleccionar una fotografía
+              para cada color.
+
+            </p>
+
+          `;
+
+          return false;
+
+        }
+
+      }
+
+
+      return true;
+
+    }
+
+
+    /* =====================================================
+       GUARDAR PRODUCTO
+       ===================================================== */
+
+    form.addEventListener(
+      "submit",
+      async (e) => {
+
+        e.preventDefault();
+
+
+        mensaje.innerHTML = "";
+
+
+        /*
+         * Validamos antes de enviar.
+         */
+
+        if (!validarVariantes()) {
+
+          return;
+
+        }
+
+
+        const datos =
+          new FormData(form);
+
+
+        /*
+         * Evita doble clic mientras se está
+         * guardando el producto.
+         */
+
+        botonGuardar.disabled =
+          true;
+
+        botonGuardar.textContent =
+          "Guardando producto...";
+
+
+        try {
+
+          const respuesta =
+            await fetch(
+              "/api/productos",
+              {
+
+                method: "POST",
+
+                body: datos
+
+              }
+            );
+
+
+          let resultado;
+
+
+          try {
+
+            resultado =
+              await respuesta.json();
+
+          } catch {
+
+            resultado = {};
+
+          }
+
+
+          if (!respuesta.ok) {
+
+            mensaje.innerHTML = `
+
+              <p class="error">
+
+                ${escaparHTML(
+                  resultado.mensaje ||
+                  "Error guardando producto"
+                )}
+
+              </p>
+
+            `;
+
+            return;
+
+          }
+
+
+          mensaje.innerHTML = `
+
+            <p class="success">
+
+              ${escaparHTML(
+                resultado.mensaje ||
+                "Producto agregado correctamente"
+              )}
+
+            </p>
+
+          `;
+
+
+          /*
+           * Limpiamos formulario.
+           */
+
+          form.reset();
+
+
+          variantesContainer
+            .classList
+            .add("hidden");
+
+
+          imagenSimpleContainer
+            .classList
+            .remove("hidden");
+
+
+          listaVariantes.innerHTML =
+            "";
+
+
+          const inputImagenSimple =
+            imagenSimpleContainer
+              .querySelector(
+                "input[name='imagen']"
+              );
+
+
+          inputImagenSimple.required =
+            true;
+
+
+          /*
+           * Recargamos productos sin necesidad
+           * de refrescar la página.
+           */
+
+          await cargarProductosAdmin();
+
+
+          /*
+           * Subimos suavemente para que el
+           * administrador vea la confirmación.
+           */
+
+          mensaje.scrollIntoView({
+
+            behavior: "smooth",
+
+            block: "center"
+
+          });
+
+
+        } catch (error) {
+
+          console.error(
+            "Error guardando producto:",
+            error
+          );
+
+
+          mensaje.innerHTML = `
+
+            <p class="error">
+
+              No se pudo conectar con el servidor.
+
+            </p>
+
+          `;
+
+        }
+
+
+        finally {
+
+          botonGuardar.disabled =
+            false;
+
+          botonGuardar.textContent =
+            "Guardar producto";
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       CARGAR PRODUCTOS DEL ADMIN
+       ===================================================== */
+
+    async function cargarProductosAdmin() {
+
+      const contenedor =
+        document.getElementById(
+          "listaAdminProductos"
+        );
+
+
+      if (!contenedor) {
+
+        return;
+
+      }
+
+
+      contenedor.innerHTML = `
+
+        <p>
+          Cargando productos...
+        </p>
+
+      `;
+
+
+      try {
+
+        const respuesta =
+          await fetch(
+            "/api/productos"
+          );
+
+
+        if (!respuesta.ok) {
+
+          throw new Error(
+            "No fue posible cargar productos"
+          );
+
+        }
+
+
+        const productos =
+          await respuesta.json();
+
+
+        contenedor.innerHTML =
+          "";
+
+
+        if (
+          !Array.isArray(productos) ||
+          productos.length === 0
+        ) {
+
+          contenedor.innerHTML = `
+
+            <p>
+              No hay productos agregados todavía.
+            </p>
+
+          `;
+
+          return;
+
+        }
+
+
+        /*
+         * Mostramos primero los productos
+         * agregados recientemente.
+         */
+
+        const productosOrdenados =
+          [...productos].reverse();
+
+
+        productosOrdenados.forEach(
+          (producto) => {
+
+
+            /*
+             * COMPATIBILIDAD:
+             *
+             * Los productos antiguos tienen:
+             * producto.imagen
+             *
+             * Los nuevos también pueden tener:
+             * producto.variantes
+             */
+
+            const imagenPrincipal =
+              producto.imagen ||
+              producto.variantes?.[0]?.imagen ||
+              "";
+
+
+            const cantidadVariantes =
+              Array.isArray(
+                producto.variantes
+              )
+                ? producto.variantes.length
+                : 0;
+
+
+            let textoVariantes =
+              "";
+
+
+            if (
+              cantidadVariantes > 0
+            ) {
+
+              const nombres =
+                producto.variantes
+                  .map(
+                    variante =>
+                      escaparHTML(
+                        variante.nombre
+                      )
+                  )
+                  .join(", ");
+
+
+              textoVariantes = `
+
+                <p>
+
+                  <strong>
+                    Colores:
+                  </strong>
+
+                  ${nombres}
+
+                </p>
+
+              `;
+
+            }
+
+
+            const precio =
+              Number(
+                producto.precio || 0
+              )
+                .toLocaleString(
+                  "es-CO"
+                );
+
+
+            const imagenSegura =
+              escaparHTML(
+                imagenPrincipal
+              );
+
+
+            const nombreSeguro =
+              escaparHTML(
+                producto.nombre
+              );
+
+
+            const categoriaSegura =
+              escaparHTML(
+                producto.categoria
+              );
+
+
+            const idSeguro =
+              String(
+                producto.id
+              )
+                .replace(
+                  /[^0-9]/g,
+                  ""
+                );
+
+
+            contenedor.innerHTML += `
+
+              <div
+                class="admin-product-card"
+              >
+
+
+                <img
+                  src="${imagenSegura}"
+                  alt="${nombreSeguro}"
+                  loading="lazy"
+                >
+
+
+                <div>
+
+                  <h3>
+                    ${nombreSeguro}
+                  </h3>
+
+
+                  <p>
+                    ${categoriaSegura}
+                  </p>
+
+
+                  ${textoVariantes}
+
+
+                  <strong>
+
+                    $${precio} COP
+
+                  </strong>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  onclick="eliminarProducto('${idSeguro}')"
+                >
+
+                  Eliminar
+
+                </button>
+
+
+              </div>
+
+            `;
+
+          }
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Error cargando productos:",
+          error
+        );
+
+
+        contenedor.innerHTML = `
+
+          <p class="error">
+
+            No se pudieron cargar los productos.
+
+          </p>
+
+        `;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ELIMINAR PRODUCTO
+       ===================================================== */
+
+    async function eliminarProducto(id) {
+
+      const confirmar =
+        confirm(
+          "¿Seguro que quieres eliminar este producto?"
+        );
+
+
+      if (!confirmar) {
+
+        return;
+
+      }
+
+
+      try {
+
+        const respuesta =
+          await fetch(
+            `/api/productos/${encodeURIComponent(id)}`,
+            {
+
+              method: "DELETE"
+
+            }
+          );
+
+
+        let resultado;
+
+
+        try {
+
+          resultado =
+            await respuesta.json();
+
+        } catch {
+
+          resultado = {};
+
+        }
+
+
+        if (!respuesta.ok) {
+
+          mensaje.innerHTML = `
+
+            <p class="error">
+
+              ${escaparHTML(
+                resultado.mensaje ||
+                "Error eliminando producto"
+              )}
+
+            </p>
+
+          `;
+
+          return;
+
+        }
+
+
+        mensaje.innerHTML = `
+
+          <p class="success">
+
+            ${escaparHTML(
+              resultado.mensaje ||
+              "Producto eliminado correctamente"
+            )}
+
+          </p>
+
+        `;
+
+
+        await cargarProductosAdmin();
+
+
+      } catch (error) {
+
+        console.error(
+          "Error eliminando producto:",
+          error
+        );
+
+
+        mensaje.innerHTML = `
+
+          <p class="error">
+
+            No se pudo conectar con el servidor.
+
+          </p>
+
+        `;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       INICIALIZACIÓN
+       ===================================================== */
+
+    cargarProductosAdmin();
+
+
   </script>
 
+
 </body>
+
 </html>
