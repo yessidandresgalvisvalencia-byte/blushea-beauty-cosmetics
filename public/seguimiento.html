@@ -1,163 +1,1007 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Seguimiento | Blushéa</title>
-  <link rel="stylesheet" href="style.css">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Seguimiento de pedido | Blushéa
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
+
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <h1>BLUSHÉA</h1>
-    <span>Seguimiento de pedido</span>
-  </div>
 
-  <nav class="nav">
-    <a href="/">Inicio</a>
-  </nav>
-</header>
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
 
-<main class="tracking-page">
-  <div id="seguimientoPedido"></div>
-</main>
+  <header class="topbar">
 
-<script>
+    <div class="brand">
 
-async function cargarSeguimiento() {
+      <h1>BLUSHÉA</h1>
 
-  const contenedor =
-    document.getElementById("seguimientoPedido");
+      <span>
+        Seguimiento de pedido
+      </span>
 
-  const params =
-    new URLSearchParams(window.location.search);
+    </div>
 
-  const id = params.get("id");
 
-  try {
+    <nav class="nav">
 
-    let respuesta =
-      await fetch(`/api/pedidos/${id}`);
+      <a href="/">
+        Inicio
+      </a>
 
-    let pedido =
-      await respuesta.json();
+      <a href="/carrito.html">
+        Carrito
+      </a>
 
-    if (!respuesta.ok) {
+    </nav>
+
+  </header>
+
+
+  <!-- =====================================================
+       CONTENIDO
+       ===================================================== -->
+
+  <main class="tracking-page">
+
+    <div id="seguimientoPedido">
+
+      <div class="empty-state">
+
+        <h3>
+          Consultando tu pedido...
+        </h3>
+
+        <p>
+          Estamos cargando la información.
+        </p>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+
+  <script>
+
+
+    /* =====================================================
+       ELEMENTOS
+       ===================================================== */
+
+    const contenedor =
+      document.getElementById(
+        "seguimientoPedido"
+      );
+
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const id =
+      params.get("id");
+
+
+    /* =====================================================
+       EVITAR INSERTAR HTML DESDE DATOS EXTERNOS
+       ===================================================== */
+
+    function escaparHTML(valor) {
+
+      return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    /* =====================================================
+       FORMATEAR DINERO
+       ===================================================== */
+
+    function formatearPrecio(valor) {
+
+      const numero =
+        Number(valor);
+
+
+      if (
+        !Number.isFinite(numero)
+      ) {
+
+        return "$0 COP";
+
+      }
+
+
+      return `$${numero.toLocaleString(
+        "es-CO"
+      )} COP`;
+
+    }
+
+
+    /* =====================================================
+       ESTADOS VISUALES DEL PEDIDO
+
+       Estos nombres coinciden con el nuevo index.js.
+       ===================================================== */
+
+    const estados = [
+
+      "Pendiente",
+
+      "Confirmado",
+
+      "Preparando",
+
+      "Enviado",
+
+      "Entregado"
+
+    ];
+
+
+    /* =====================================================
+       NOMBRES MÁS AMIGABLES PARA LA CLIENTA
+       ===================================================== */
+
+    const nombresEstados = {
+
+      Pendiente:
+        "Pedido recibido",
+
+      Confirmado:
+        "Confirmado",
+
+      Preparando:
+        "Preparando",
+
+      Enviado:
+        "En camino",
+
+      Entregado:
+        "Entregado",
+
+      Cancelado:
+        "Cancelado"
+
+    };
+
+
+    /* =====================================================
+       BUSCAR PEDIDO
+
+       Primero buscamos entre pedidos activos.
+
+       Si ya fue entregado, el servidor lo mueve
+       al historial de ventas, así que después
+       buscamos allí.
+       ===================================================== */
+
+    async function buscarPedido() {
+
+
+      if (!id) {
+
+        throw new Error(
+          "NO_ID"
+        );
+
+      }
+
+
+      /* -----------------------------------------------------
+         PEDIDOS ACTIVOS
+         ----------------------------------------------------- */
+
+      const respuestaPedido =
+        await fetch(
+          `/api/pedidos/${encodeURIComponent(id)}`,
+          {
+            cache: "no-store"
+          }
+        );
+
+
+      if (
+        respuestaPedido.ok
+      ) {
+
+        return await
+          respuestaPedido.json();
+
+      }
+
+
+      /* -----------------------------------------------------
+         SI YA FUE ENTREGADO, BUSCAR EN VENTAS
+         ----------------------------------------------------- */
 
       const ventasRespuesta =
-        await fetch("/api/ventas");
+        await fetch(
+          "/api/ventas",
+          {
+            cache: "no-store"
+          }
+        );
+
+
+      if (
+        !ventasRespuesta.ok
+      ) {
+
+        throw new Error(
+          "ERROR_VENTAS"
+        );
+
+      }
+
 
       const ventas =
         await ventasRespuesta.json();
 
-      pedido =
+
+      if (
+        !Array.isArray(ventas)
+      ) {
+
+        return null;
+
+      }
+
+
+      const pedido =
         ventas.find(
-          v => String(v.id) === String(id)
+          venta =>
+            String(venta.id) ===
+            String(id)
         );
 
-      if (!pedido) {
 
-        contenedor.innerHTML = `
-          <div class="empty-state">
-            <h3>Pedido no encontrado</h3>
-            <p>
-              Puede que ya haya sido eliminado
-              o no exista.
-            </p>
-          </div>
-        `;
+      return pedido || null;
 
-        return;
-      }
     }
 
-    const estados = [
-      "Pendiente",
-      "Empacando",
-      "Enviado",
-      "Entregado"
-    ];
 
-    contenedor.innerHTML = `
-      <section class="tracking-card">
+    /* =====================================================
+       CREAR PASOS DEL SEGUIMIENTO
+       ===================================================== */
 
-        <h2>
-          Pedido #${pedido.id}
-        </h2>
+    function crearPasos(
+      estadoActual
+    ) {
 
-        <p>
-          <strong>Cliente:</strong>
-          ${pedido.cliente.nombre}
-        </p>
 
-        <p>
-          <strong>Total:</strong>
-          $${pedido.total.toLocaleString("es-CO")} COP
-        </p>
+      /*
+       * Un pedido cancelado no continúa
+       * por la línea normal de preparación.
+       */
+
+      if (
+        estadoActual ===
+        "Cancelado"
+      ) {
+
+        return `
+
+          <div class="tracking-steps">
+
+            <div
+              class="tracking-step active"
+            >
+              Pedido recibido
+            </div>
+
+          </div>
+
+
+          <div
+            class="tracking-cancelled"
+          >
+
+            Pedido cancelado
+
+          </div>
+
+        `;
+
+      }
+
+
+      let indiceActual =
+        estados.indexOf(
+          estadoActual
+        );
+
+
+      /*
+       * Compatibilidad con pedidos antiguos
+       * que pudieran tener "Empacando".
+       */
+
+      if (
+        estadoActual ===
+        "Empacando"
+      ) {
+
+        indiceActual =
+          estados.indexOf(
+            "Preparando"
+          );
+
+      }
+
+
+      /*
+       * Si aparece un estado desconocido,
+       * mostramos únicamente el primero.
+       */
+
+      if (
+        indiceActual === -1
+      ) {
+
+        indiceActual = 0;
+
+      }
+
+
+      return `
 
         <div class="tracking-steps">
 
-          ${estados.map(estado => `
+          ${estados.map(
+            (estado, index) => {
 
-            <div class="
-              tracking-step
-              ${estados.indexOf(estado)
-                <= estados.indexOf(pedido.estado)
-                ? "active"
-                : ""}
-            ">
+              const activo =
+                index <= indiceActual
+                  ? "active"
+                  : "";
 
-              ${estado}
 
-            </div>
+              return `
 
-          `).join("")}
+                <div
+                  class="tracking-step ${activo}"
+                >
+
+                  ${escaparHTML(
+                    nombresEstados[estado]
+                  )}
+
+                </div>
+
+              `;
+
+            }
+          ).join("")}
 
         </div>
 
-        <p class="tracking-status">
+      `;
 
-          Estado actual:
-          <strong>${pedido.estado}</strong>
+    }
 
-        </p>
 
-        <a
-          class="buy-detail-button"
-          href="/recibo.html?id=${pedido.id}"
-          target="_blank"
+    /* =====================================================
+       MOSTRAR PRODUCTOS
+       ===================================================== */
+
+    function crearProductos(
+      productos
+    ) {
+
+
+      if (
+        !Array.isArray(productos) ||
+        productos.length === 0
+      ) {
+
+        return "";
+
+      }
+
+
+      return `
+
+        <div class="tracking-products">
+
+          <h3>
+            Tu pedido
+          </h3>
+
+
+          ${productos.map(
+            producto => {
+
+
+              const nombre =
+                escaparHTML(
+                  producto.nombre ||
+                  "Producto"
+                );
+
+
+              const tono =
+                producto.tono
+                  ? escaparHTML(
+                      producto.tono
+                    )
+                  : "";
+
+
+              const cantidad =
+                Number(
+                  producto.cantidad
+                ) || 1;
+
+
+              const imagen =
+                escaparHTML(
+                  producto.imagen ||
+                  ""
+                );
+
+
+              const precio =
+                formatearPrecio(
+                  Number(
+                    producto.precio
+                  ) * cantidad
+                );
+
+
+              return `
+
+                <div
+                  class="tracking-product"
+                >
+
+                  ${
+                    imagen
+                      ? `
+                        <img
+                          src="${imagen}"
+                          alt="${nombre}"
+                          loading="lazy"
+                        >
+                      `
+                      : ""
+                  }
+
+
+                  <div>
+
+                    <strong>
+                      ${nombre}
+                    </strong>
+
+
+                    ${
+                      tono
+                        ? `
+                          <p>
+                            Color / tono:
+                            ${tono}
+                          </p>
+                        `
+                        : ""
+                    }
+
+
+                    <p>
+                      Cantidad:
+                      ${cantidad}
+                    </p>
+
+
+                    <p>
+                      ${precio}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              `;
+
+            }
+          ).join("")}
+
+        </div>
+
+      `;
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR PEDIDO
+       ===================================================== */
+
+    function mostrarPedido(
+      pedido
+    ) {
+
+
+      const estado =
+        pedido.estado ||
+        "Pendiente";
+
+
+      const nombreCliente =
+        escaparHTML(
+          pedido.cliente?.nombre ||
+          "Cliente"
+        );
+
+
+      const pedidoId =
+        escaparHTML(
+          pedido.id
+        );
+
+
+      const nombreEstado =
+        escaparHTML(
+          nombresEstados[estado] ||
+          estado
+        );
+
+
+      const fecha =
+        pedido.fecha
+          ? escaparHTML(
+              pedido.fecha
+            )
+          : "";
+
+
+      const productosHTML =
+        crearProductos(
+          pedido.productos
+        );
+
+
+      const pasosHTML =
+        crearPasos(
+          estado
+        );
+
+
+      contenedor.innerHTML = `
+
+        <section
+          class="tracking-card"
         >
-          Descargar recibo
-        </a>
 
-      </section>
-    `;
 
-  } catch (error) {
+          <div
+            class="tracking-order-heading"
+          >
 
-    console.error(error);
+            <span
+              class="tracking-eyebrow"
+            >
+              BLUSHÉA BEAUTY COSMETICS
+            </span>
 
-    contenedor.innerHTML = `
-      <div class="empty-state">
-        <h3>Error cargando seguimiento</h3>
-        <p>
-          Revisa que el servidor esté encendido.
-        </p>
-      </div>
-    `;
 
-  }
+            <h2>
+              Pedido #${pedidoId}
+            </h2>
 
-}
 
-cargarSeguimiento();
+            <p>
+              Gracias por comprar con nosotros,
+              ${nombreCliente}.
+            </p>
 
-setInterval(
-  cargarSeguimiento,
-  5000
-);
+          </div>
 
-</script>
+
+          ${
+            fecha
+              ? `
+                <p>
+                  <strong>
+                    Fecha del pedido:
+                  </strong>
+
+                  ${fecha}
+                </p>
+              `
+              : ""
+          }
+
+
+          <p>
+
+            <strong>
+              Total:
+            </strong>
+
+            ${formatearPrecio(
+              pedido.total
+            )}
+
+          </p>
+
+
+          <div
+            class="tracking-progress-title"
+          >
+
+            <h3>
+              Estado de tu pedido
+            </h3>
+
+          </div>
+
+
+          ${pasosHTML}
+
+
+          <p
+            class="tracking-status"
+          >
+
+            Estado actual:
+
+            <strong>
+              ${nombreEstado}
+            </strong>
+
+          </p>
+
+
+          ${productosHTML}
+
+
+          <div
+            class="tracking-actions"
+          >
+
+            <a
+              class="buy-detail-button"
+              href="/recibo.html?id=${encodeURIComponent(
+                pedido.id
+              )}"
+              target="_blank"
+              rel="noopener"
+            >
+
+              Ver recibo
+
+            </a>
+
+
+            <a
+              class="secondary-button"
+              href="/"
+            >
+
+              Seguir comprando
+
+            </a>
+
+          </div>
+
+
+          <p
+            class="tracking-update-note"
+          >
+
+            Esta página se actualiza
+            automáticamente mientras tu pedido
+            avanza.
+
+          </p>
+
+
+        </section>
+
+      `;
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR PEDIDO NO ENCONTRADO
+       ===================================================== */
+
+    function mostrarNoEncontrado() {
+
+      contenedor.innerHTML = `
+
+        <div class="empty-state">
+
+          <h3>
+            Pedido no encontrado
+          </h3>
+
+          <p>
+            No encontramos un pedido con este
+            número.
+          </p>
+
+          <a
+            href="/"
+            class="buy-detail-button"
+          >
+            Volver a Blushéa
+          </a>
+
+        </div>
+
+      `;
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR ERROR
+       ===================================================== */
+
+    function mostrarError() {
+
+      contenedor.innerHTML = `
+
+        <div class="empty-state">
+
+          <h3>
+            No pudimos cargar tu pedido
+          </h3>
+
+          <p>
+            Intenta nuevamente en unos segundos.
+          </p>
+
+          <button
+            type="button"
+            class="buy-detail-button"
+            onclick="cargarSeguimiento()"
+          >
+            Intentar nuevamente
+          </button>
+
+        </div>
+
+      `;
+
+    }
+
+
+    /* =====================================================
+       CARGAR SEGUIMIENTO
+       ===================================================== */
+
+    async function cargarSeguimiento() {
+
+
+      if (!id) {
+
+        contenedor.innerHTML = `
+
+          <div class="empty-state">
+
+            <h3>
+              Falta el número del pedido
+            </h3>
+
+            <p>
+              Abre el enlace de seguimiento que
+              recibiste después de realizar tu
+              compra.
+            </p>
+
+            <a
+              href="/"
+              class="buy-detail-button"
+            >
+              Ir a Blushéa
+            </a>
+
+          </div>
+
+        `;
+
+
+        return;
+
+      }
+
+
+      try {
+
+        const pedido =
+          await buscarPedido();
+
+
+        if (!pedido) {
+
+          mostrarNoEncontrado();
+
+          return;
+
+        }
+
+
+        mostrarPedido(
+          pedido
+        );
+
+
+        /*
+         * Si el pedido ya terminó, no necesitamos
+         * seguir consultando el servidor.
+         */
+
+        if (
+          pedido.estado ===
+          "Entregado" ||
+          pedido.estado ===
+          "Cancelado"
+        ) {
+
+          detenerActualizacion();
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Error cargando seguimiento:",
+          error
+        );
+
+
+        if (
+          error.message ===
+          "NO_ID"
+        ) {
+
+          mostrarNoEncontrado();
+
+          return;
+
+        }
+
+
+        mostrarError();
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ACTUALIZACIÓN AUTOMÁTICA
+
+       Antes consultabas cada 5 segundos.
+       10 segundos reduce solicitudes innecesarias.
+       ===================================================== */
+
+    let intervaloSeguimiento =
+      null;
+
+
+    function iniciarActualizacion() {
+
+      if (
+        intervaloSeguimiento
+      ) {
+
+        return;
+
+      }
+
+
+      intervaloSeguimiento =
+        setInterval(
+          cargarSeguimiento,
+          10000
+        );
+
+    }
+
+
+    function detenerActualizacion() {
+
+      if (
+        !intervaloSeguimiento
+      ) {
+
+        return;
+
+      }
+
+
+      clearInterval(
+        intervaloSeguimiento
+      );
+
+
+      intervaloSeguimiento =
+        null;
+
+    }
+
+
+    /* =====================================================
+       SI LA CLIENTA CAMBIA DE PESTAÑA
+
+       No hacemos consultas innecesarias mientras
+       la página está oculta.
+       ===================================================== */
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+
+        if (
+          document.hidden
+        ) {
+
+          detenerActualizacion();
+
+        } else {
+
+          cargarSeguimiento();
+
+          iniciarActualizacion();
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       INICIAR
+       ===================================================== */
+
+    cargarSeguimiento();
+
+    iniciarActualizacion();
+
+
+  </script>
+
 
 </body>
+
 </html>

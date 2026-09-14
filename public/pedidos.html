@@ -1,106 +1,1580 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Pedidos | Blushéa</title>
-  <link rel="stylesheet" href="style.css">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="robots"
+    content="noindex, nofollow"
+  >
+
+  <title>
+    Pedidos | Blushéa
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
+
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <h1>BLUSHÉA</h1>
-    <span>Panel de pedidos</span>
-  </div>
 
-  <nav class="nav">
-    <a href="/admin.html">Productos</a>
-    <a href="/">Tienda</a>
-  </nav>
-</header>
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
 
-<main class="orders-page">
-  <h2>Pedidos recibidos</h2>
-  <div id="listaPedidos"></div>
-</main>
+  <header class="topbar">
 
-<script>
-async function cargarPedidos() {
-  const contenedor = document.getElementById("listaPedidos");
+    <div class="brand">
 
-  const respuesta = await fetch("/api/pedidos");
-  const pedidos = await respuesta.json();
+      <h1>BLUSHÉA</h1>
 
-  contenedor.innerHTML = "";
+      <span>
+        Panel de pedidos
+      </span>
 
-  if (!pedidos.length) {
-    contenedor.innerHTML = `
-      <div class="empty-state">
-        <h3>No hay pedidos todavía</h3>
+    </div>
+
+
+    <nav class="nav">
+
+      <a href="/admin.html">
+        Productos
+      </a>
+
+      <a href="/ventas.html">
+        Ventas
+      </a>
+
+      <a
+        href="/"
+        target="_blank"
+        rel="noopener"
+      >
+        Ver tienda
+      </a>
+
+    </nav>
+
+  </header>
+
+
+
+  <!-- =====================================================
+       PEDIDOS
+       ===================================================== -->
+
+  <main class="orders-page">
+
+
+    <div class="orders-page-heading">
+
+      <div>
+
+        <span class="orders-eyebrow">
+          BLUSHÉA ADMIN
+        </span>
+
+        <h2>
+          Pedidos recibidos
+        </h2>
+
+        <p>
+          Gestiona la preparación y entrega de
+          las compras realizadas en la tienda.
+        </p>
+
       </div>
-    `;
-    return;
-  }
 
-  pedidos.reverse().forEach((pedido) => {
-    contenedor.innerHTML += `
-      <article class="order-card">
-        <div class="order-header">
-          <h3>Pedido #${pedido.id}</h3>
-          <span>${pedido.estado}</span>
+
+      <button
+        type="button"
+        id="actualizarPedidos"
+        class="secondary-button"
+      >
+        Actualizar pedidos
+      </button>
+
+    </div>
+
+
+
+    <!-- RESUMEN -->
+
+    <section
+      class="orders-summary"
+      id="resumenPedidos"
+    ></section>
+
+
+
+    <!-- MENSAJES -->
+
+    <div
+      id="mensajePedidos"
+      aria-live="polite"
+    ></div>
+
+
+
+    <!-- LISTA -->
+
+    <section
+      id="listaPedidos"
+      aria-live="polite"
+    >
+
+      <div class="empty-state">
+
+        <h3>
+          Cargando pedidos...
+        </h3>
+
+        <p>
+          Consultando las compras recibidas.
+        </p>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+
+  <script>
+
+
+    /* =====================================================
+       ELEMENTOS
+       ===================================================== */
+
+    const contenedor =
+      document.getElementById(
+        "listaPedidos"
+      );
+
+
+    const resumenPedidos =
+      document.getElementById(
+        "resumenPedidos"
+      );
+
+
+    const mensajePedidos =
+      document.getElementById(
+        "mensajePedidos"
+      );
+
+
+    const botonActualizar =
+      document.getElementById(
+        "actualizarPedidos"
+      );
+
+
+    /* =====================================================
+       UTILIDADES
+       ===================================================== */
+
+    function escaparHTML(valor) {
+
+      return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    function formatearPrecio(valor) {
+
+      const numero =
+        Number(valor);
+
+
+      if (
+        !Number.isFinite(numero)
+      ) {
+
+        return "$0 COP";
+
+      }
+
+
+      return `$${numero.toLocaleString(
+        "es-CO"
+      )} COP`;
+
+    }
+
+
+    /* =====================================================
+       ESTADOS OFICIALES
+       Deben coincidir con index.js
+       ===================================================== */
+
+    const ESTADOS = [
+
+      "Pendiente",
+
+      "Confirmado",
+
+      "Preparando",
+
+      "Enviado",
+
+      "Entregado",
+
+      "Cancelado"
+
+    ];
+
+
+    /* =====================================================
+       ETIQUETAS MÁS CLARAS
+       ===================================================== */
+
+    const ETIQUETAS_ESTADO = {
+
+      Pendiente:
+        "Pendiente",
+
+      Confirmado:
+        "Confirmado",
+
+      Preparando:
+        "Preparando",
+
+      Enviado:
+        "Enviado",
+
+      Entregado:
+        "Entregado",
+
+      Cancelado:
+        "Cancelado"
+
+    };
+
+
+    /* =====================================================
+       COMPATIBILIDAD CON PEDIDOS ANTIGUOS
+
+       Si anteriormente guardaste "Empacando",
+       visualmente lo tratamos como "Preparando".
+       ===================================================== */
+
+    function normalizarEstado(
+      estado
+    ) {
+
+      if (
+        estado ===
+        "Empacando"
+      ) {
+
+        return "Preparando";
+
+      }
+
+
+      if (
+        ESTADOS.includes(
+          estado
+        )
+      ) {
+
+        return estado;
+
+      }
+
+
+      return "Pendiente";
+
+    }
+
+
+    /* =====================================================
+       CREAR OPCIONES DE ESTADO
+       ===================================================== */
+
+    function crearOpcionesEstado(
+      estadoActual
+    ) {
+
+      const estadoNormalizado =
+        normalizarEstado(
+          estadoActual
+        );
+
+
+      return ESTADOS
+        .map(
+          estado => `
+
+            <option
+              value="${estado}"
+              ${
+                estado === estadoNormalizado
+                  ? "selected"
+                  : ""
+              }
+            >
+
+              ${ETIQUETAS_ESTADO[estado]}
+
+            </option>
+
+          `
+        )
+        .join("");
+
+    }
+
+
+    /* =====================================================
+       CREAR PRODUCTOS DEL PEDIDO
+       ===================================================== */
+
+    function crearProductosHTML(
+      productos
+    ) {
+
+      if (
+        !Array.isArray(productos) ||
+        productos.length === 0
+      ) {
+
+        return `
+
+          <p>
+            No hay información de productos.
+          </p>
+
+        `;
+
+      }
+
+
+      return productos
+        .map(
+          producto => {
+
+            const nombre =
+              escaparHTML(
+                producto.nombre ||
+                "Producto"
+              );
+
+
+            const imagen =
+              escaparHTML(
+                producto.imagen ||
+                ""
+              );
+
+
+            const tono =
+              producto.tono
+                ? escaparHTML(
+                    producto.tono
+                  )
+                : "";
+
+
+            const cantidad =
+              Math.max(
+                1,
+                Number(
+                  producto.cantidad
+                ) || 1
+              );
+
+
+            const precioUnitario =
+              Number(
+                producto.precio
+              ) || 0;
+
+
+            const totalProducto =
+              precioUnitario *
+              cantidad;
+
+
+            return `
+
+              <div
+                class="order-product"
+              >
+
+
+                ${
+                  imagen
+                    ? `
+                      <img
+                        src="${imagen}"
+                        alt="${nombre}${
+                          tono
+                            ? ` - ${tono}`
+                            : ""
+                        }"
+                        loading="lazy"
+                      >
+                    `
+                    : `
+                      <div
+                        class="order-product-placeholder"
+                      >
+                        BLUSHÉA
+                      </div>
+                    `
+                }
+
+
+                <div
+                  class="order-product-info"
+                >
+
+                  <strong>
+                    ${nombre}
+                  </strong>
+
+
+                  ${
+                    tono
+                      ? `
+                        <p
+                          class="order-product-tone"
+                        >
+
+                          <strong>
+                            Color / tono:
+                          </strong>
+
+                          ${tono}
+
+                        </p>
+                      `
+                      : ""
+                  }
+
+
+                  <p>
+                    Cantidad:
+                    ${cantidad}
+                  </p>
+
+
+                  <p>
+                    Precio unitario:
+                    ${formatearPrecio(
+                      precioUnitario
+                    )}
+                  </p>
+
+
+                  <p>
+                    <strong>
+                      ${formatearPrecio(
+                        totalProducto
+                      )}
+                    </strong>
+                  </p>
+
+                </div>
+
+              </div>
+
+            `;
+
+          }
+        )
+        .join("");
+
+    }
+
+
+    /* =====================================================
+       RESUMEN SUPERIOR
+       ===================================================== */
+
+    function actualizarResumen(
+      pedidos
+    ) {
+
+      const pendientes =
+        pedidos.filter(
+          pedido =>
+            normalizarEstado(
+              pedido.estado
+            ) ===
+            "Pendiente"
+        ).length;
+
+
+      const confirmados =
+        pedidos.filter(
+          pedido =>
+            normalizarEstado(
+              pedido.estado
+            ) ===
+            "Confirmado"
+        ).length;
+
+
+      const preparando =
+        pedidos.filter(
+          pedido =>
+            normalizarEstado(
+              pedido.estado
+            ) ===
+            "Preparando"
+        ).length;
+
+
+      const enviados =
+        pedidos.filter(
+          pedido =>
+            normalizarEstado(
+              pedido.estado
+            ) ===
+            "Enviado"
+        ).length;
+
+
+      resumenPedidos.innerHTML = `
+
+        <div class="order-summary-card">
+
+          <span>
+            Activos
+          </span>
+
+          <strong>
+            ${pedidos.length}
+          </strong>
+
         </div>
 
-        <p><strong>Fecha:</strong> ${pedido.fecha}</p>
-        <p><strong>Cliente:</strong> ${pedido.cliente.nombre}</p>
-        <p><strong>Teléfono:</strong> ${pedido.cliente.telefono}</p>
-        <p><strong>Dirección:</strong> ${pedido.cliente.direccion}, ${pedido.cliente.barrio}, Medellín</p>
 
-        <h4>Productos</h4>
+        <div class="order-summary-card">
 
-        ${pedido.productos.map(p => `
-          <div class="order-product">
-            <img src="${p.imagen}">
-            <div>
-              <strong>${p.nombre}</strong>
-              ${p.tono ? `<p>Tono: ${p.tono}</p>` : ""}
-              <p>Cantidad: ${p.cantidad}</p>
-              <p>$${(p.precio * p.cantidad).toLocaleString("es-CO")} COP</p>
-            </div>
+          <span>
+            Pendientes
+          </span>
+
+          <strong>
+            ${pendientes}
+          </strong>
+
+        </div>
+
+
+        <div class="order-summary-card">
+
+          <span>
+            Confirmados
+          </span>
+
+          <strong>
+            ${confirmados}
+          </strong>
+
+        </div>
+
+
+        <div class="order-summary-card">
+
+          <span>
+            Preparando
+          </span>
+
+          <strong>
+            ${preparando}
+          </strong>
+
+        </div>
+
+
+        <div class="order-summary-card">
+
+          <span>
+            Enviados
+          </span>
+
+          <strong>
+            ${enviados}
+          </strong>
+
+        </div>
+
+      `;
+
+    }
+
+
+    /* =====================================================
+       CARGAR PEDIDOS
+       ===================================================== */
+
+    async function cargarPedidos(
+      mostrarCarga = false
+    ) {
+
+
+      if (
+        mostrarCarga
+      ) {
+
+        contenedor.innerHTML = `
+
+          <div class="empty-state">
+
+            <h3>
+              Actualizando pedidos...
+            </h3>
+
           </div>
-        `).join("")}
 
-        <div class="order-total">
-          <p><strong>Subtotal:</strong> $${pedido.subtotal.toLocaleString("es-CO")} COP</p>
-          <p><strong>Envío:</strong> $${pedido.envio.toLocaleString("es-CO")} COP</p>
-          <p><strong>Total:</strong> $${pedido.total.toLocaleString("es-CO")} COP</p>
-        </div>
+        `;
 
-        <select onchange="cambiarEstado(${pedido.id}, this.value)">
-          <option value="Pendiente" ${pedido.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
-          <option value="Empacando" ${pedido.estado === "Empacando" ? "selected" : ""}>Empacando</option>
-          <option value="Enviado" ${pedido.estado === "Enviado" ? "selected" : ""}>Enviado</option>
-          <option value="Entregado" ${pedido.estado === "Entregado" ? "selected" : ""}>Entregado</option>
-        </select>
-      </article>
-    `;
-  });
-}
+      }
 
-async function cambiarEstado(id, estado) {
-  await fetch(`/api/pedidos/${id}/estado`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ estado })
-  });
 
-  cargarPedidos();
-}
+      try {
 
-cargarPedidos();
-setInterval(cargarPedidos, 5000);
-</script>
+        const respuesta =
+          await fetch(
+            "/api/pedidos",
+            {
+              cache:
+                "no-store"
+            }
+          );
+
+
+        if (
+          !respuesta.ok
+        ) {
+
+          throw new Error(
+            "No fue posible cargar pedidos"
+          );
+
+        }
+
+
+        const pedidos =
+          await respuesta.json();
+
+
+        if (
+          !Array.isArray(pedidos)
+        ) {
+
+          throw new Error(
+            "Formato de pedidos inválido"
+          );
+
+        }
+
+
+        /*
+         * Actualizamos estadísticas.
+         */
+
+        actualizarResumen(
+          pedidos
+        );
+
+
+        /*
+         * Limpiamos contenido anterior.
+         */
+
+        contenedor.innerHTML =
+          "";
+
+
+        if (
+          pedidos.length === 0
+        ) {
+
+          contenedor.innerHTML = `
+
+            <div class="empty-state">
+
+              <h3>
+                No hay pedidos pendientes
+              </h3>
+
+              <p>
+                Cuando una clienta realice una
+                compra aparecerá aquí.
+              </p>
+
+            </div>
+
+          `;
+
+          return;
+
+        }
+
+
+        /*
+         * Mostramos primero los pedidos nuevos.
+         *
+         * Usamos una copia para no modificar
+         * innecesariamente el array original.
+         */
+
+        const pedidosOrdenados =
+          [...pedidos]
+            .reverse();
+
+
+        pedidosOrdenados.forEach(
+          pedido => {
+
+            const id =
+              escaparHTML(
+                pedido.id
+              );
+
+
+            const fecha =
+              escaparHTML(
+                pedido.fecha ||
+                ""
+              );
+
+
+            const cliente =
+              escaparHTML(
+                pedido.cliente
+                  ?.nombre ||
+                "Sin nombre"
+              );
+
+
+            const telefono =
+              escaparHTML(
+                pedido.cliente
+                  ?.telefono ||
+                "No registrado"
+              );
+
+
+            const direccion =
+              escaparHTML(
+                pedido.cliente
+                  ?.direccion ||
+                "No registrada"
+              );
+
+
+            const barrio =
+              escaparHTML(
+                pedido.cliente
+                  ?.barrio ||
+                ""
+              );
+
+
+            const estado =
+              normalizarEstado(
+                pedido.estado
+              );
+
+
+            const productosHTML =
+              crearProductosHTML(
+                pedido.productos
+              );
+
+
+            const subtotal =
+              formatearPrecio(
+                pedido.subtotal
+              );
+
+
+            const envio =
+              formatearPrecio(
+                pedido.envio
+              );
+
+
+            const total =
+              formatearPrecio(
+                pedido.total
+              );
+
+
+            const tarjeta =
+              document.createElement(
+                "article"
+              );
+
+
+            tarjeta.className =
+              "order-card";
+
+
+            tarjeta.dataset.pedidoId =
+              String(
+                pedido.id
+              );
+
+
+            tarjeta.innerHTML = `
+
+              <!-- ===========================================
+                   ENCABEZADO
+                   =========================================== -->
+
+              <div
+                class="order-header"
+              >
+
+                <div>
+
+                  <span
+                    class="order-id-label"
+                  >
+                    PEDIDO
+                  </span>
+
+                  <h3>
+                    #${id}
+                  </h3>
+
+                </div>
+
+
+                <span
+                  class="order-status
+                  order-status-${estado.toLowerCase()}"
+                >
+
+                  ${escaparHTML(
+                    ETIQUETAS_ESTADO[estado]
+                  )}
+
+                </span>
+
+              </div>
+
+
+
+              <!-- ===========================================
+                   CLIENTE
+                   =========================================== -->
+
+              <div
+                class="order-customer"
+              >
+
+                <h4>
+                  Información de entrega
+                </h4>
+
+
+                <p>
+
+                  <strong>
+                    Fecha:
+                  </strong>
+
+                  ${fecha}
+
+                </p>
+
+
+                <p>
+
+                  <strong>
+                    Cliente:
+                  </strong>
+
+                  ${cliente}
+
+                </p>
+
+
+                <p>
+
+                  <strong>
+                    Teléfono:
+                  </strong>
+
+                  ${telefono}
+
+                </p>
+
+
+                <p>
+
+                  <strong>
+                    Dirección:
+                  </strong>
+
+                  ${direccion}${
+                    barrio
+                      ? `, ${barrio}`
+                      : ""
+                  }, Medellín
+
+                </p>
+
+              </div>
+
+
+
+              <!-- ===========================================
+                   PRODUCTOS
+                   =========================================== -->
+
+              <div
+                class="order-products-section"
+              >
+
+                <h4>
+                  Productos
+                </h4>
+
+                ${productosHTML}
+
+              </div>
+
+
+
+              <!-- ===========================================
+                   TOTALES
+                   =========================================== -->
+
+              <div
+                class="order-total"
+              >
+
+                <p>
+
+                  <span>
+                    Subtotal
+                  </span>
+
+                  <strong>
+                    ${subtotal}
+                  </strong>
+
+                </p>
+
+
+                <p>
+
+                  <span>
+                    Envío
+                  </span>
+
+                  <strong>
+                    ${envio}
+                  </strong>
+
+                </p>
+
+
+                <p
+                  class="order-grand-total"
+                >
+
+                  <span>
+                    Total
+                  </span>
+
+                  <strong>
+                    ${total}
+                  </strong>
+
+                </p>
+
+              </div>
+
+
+
+              <!-- ===========================================
+                   ADMINISTRAR ESTADO
+                   =========================================== -->
+
+              <div
+                class="order-management"
+              >
+
+                <label
+                  for="estado-${id}"
+                >
+                  Estado del pedido
+                </label>
+
+
+                <select
+                  id="estado-${id}"
+                  class="order-status-select"
+                  data-pedido-id="${id}"
+                >
+
+                  ${crearOpcionesEstado(
+                    pedido.estado
+                  )}
+
+                </select>
+
+
+                <p
+                  class="order-status-help"
+                >
+
+                  Cuando marques el pedido como
+                  Entregado, pasará automáticamente
+                  al historial de ventas.
+
+                </p>
+
+              </div>
+
+
+
+              <!-- ===========================================
+                   ACCIONES
+                   =========================================== -->
+
+              <div
+                class="order-actions"
+              >
+
+                <a
+                  href="/seguimiento.html?id=${encodeURIComponent(
+                    pedido.id
+                  )}"
+                  target="_blank"
+                  rel="noopener"
+                  class="secondary-button"
+                >
+                  Ver seguimiento
+                </a>
+
+
+                <a
+                  href="/recibo.html?id=${encodeURIComponent(
+                    pedido.id
+                  )}"
+                  target="_blank"
+                  rel="noopener"
+                  class="secondary-button"
+                >
+                  Ver recibo
+                </a>
+
+              </div>
+
+            `;
+
+
+            contenedor.appendChild(
+              tarjeta
+            );
+
+          }
+        );
+
+
+        /*
+         * Activamos selects después de crear
+         * las tarjetas.
+         */
+
+        activarSelectoresEstado();
+
+
+      } catch (error) {
+
+        console.error(
+          "Error cargando pedidos:",
+          error
+        );
+
+
+        contenedor.innerHTML = `
+
+          <div class="empty-state">
+
+            <h3>
+              No pudimos cargar los pedidos
+            </h3>
+
+            <p>
+              Comprueba la conexión con el
+              servidor e intenta nuevamente.
+            </p>
+
+            <button
+              type="button"
+              class="secondary-button"
+              id="reintentarPedidos"
+            >
+              Intentar nuevamente
+            </button>
+
+          </div>
+
+        `;
+
+
+        document
+          .getElementById(
+            "reintentarPedidos"
+          )
+          ?.addEventListener(
+            "click",
+            () =>
+              cargarPedidos(
+                true
+              )
+          );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ACTIVAR SELECTORES
+       ===================================================== */
+
+    function activarSelectoresEstado() {
+
+      const selectores =
+        document.querySelectorAll(
+          ".order-status-select"
+        );
+
+
+      selectores.forEach(
+        selector => {
+
+          selector.addEventListener(
+            "change",
+            async () => {
+
+              const id =
+                selector.dataset.pedidoId;
+
+
+              const estado =
+                selector.value;
+
+
+              await cambiarEstado(
+                id,
+                estado,
+                selector
+              );
+
+            }
+          );
+
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       CAMBIAR ESTADO
+       ===================================================== */
+
+    async function cambiarEstado(
+      id,
+      estado,
+      selector
+    ) {
+
+      /*
+       * Para Entregado y Cancelado pedimos
+       * confirmación porque son acciones
+       * importantes.
+       */
+
+      if (
+        estado === "Entregado"
+      ) {
+
+        const confirmar =
+          confirm(
+            "¿Confirmas que este pedido ya fue entregado? Pasará al historial de ventas."
+          );
+
+
+        if (!confirmar) {
+
+          await cargarPedidos();
+
+          return;
+
+        }
+
+      }
+
+
+      if (
+        estado === "Cancelado"
+      ) {
+
+        const confirmar =
+          confirm(
+            "¿Seguro que quieres marcar este pedido como cancelado?"
+          );
+
+
+        if (!confirmar) {
+
+          await cargarPedidos();
+
+          return;
+
+        }
+
+      }
+
+
+      const valorAnterior =
+        selector.dataset.estadoAnterior ||
+        "";
+
+
+      selector.disabled =
+        true;
+
+
+      mensajePedidos.innerHTML = `
+
+        <p class="success">
+          Actualizando pedido #${escaparHTML(
+            id
+          )}...
+        </p>
+
+      `;
+
+
+      try {
+
+        const respuesta =
+          await fetch(
+            `/api/pedidos/${encodeURIComponent(id)}/estado`,
+            {
+
+              method:
+                "PUT",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json"
+
+              },
+
+              body:
+                JSON.stringify({
+                  estado
+                })
+
+            }
+          );
+
+
+        let resultado;
+
+
+        try {
+
+          resultado =
+            await respuesta.json();
+
+        } catch {
+
+          resultado = {};
+
+        }
+
+
+        if (
+          !respuesta.ok
+        ) {
+
+          throw new Error(
+            resultado.mensaje ||
+            "No fue posible actualizar el pedido"
+          );
+
+        }
+
+
+        mensajePedidos.innerHTML = `
+
+          <p class="success">
+
+            Pedido #${escaparHTML(
+              id
+            )} actualizado a
+            <strong>
+              ${escaparHTML(
+                ETIQUETAS_ESTADO[estado]
+              )}
+            </strong>.
+
+          </p>
+
+        `;
+
+
+        /*
+         * Si fue entregado desaparecerá de
+         * pedidos porque index.js lo mueve a
+         * ventas.json.
+         */
+
+        await cargarPedidos();
+
+
+      } catch (error) {
+
+        console.error(
+          "Error cambiando estado:",
+          error
+        );
+
+
+        mensajePedidos.innerHTML = `
+
+          <p class="error">
+
+            ${escaparHTML(
+              error.message ||
+              "No se pudo actualizar el pedido"
+            )}
+
+          </p>
+
+        `;
+
+
+        if (
+          valorAnterior
+        ) {
+
+          selector.value =
+            valorAnterior;
+
+        }
+
+
+        selector.disabled =
+          false;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       GUARDAR ESTADO ANTERIOR
+       ===================================================== */
+
+    document.addEventListener(
+      "focusin",
+      evento => {
+
+        if (
+          evento.target.matches(
+            ".order-status-select"
+          )
+        ) {
+
+          evento.target.dataset.estadoAnterior =
+            evento.target.value;
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       ACTUALIZAR MANUALMENTE
+       ===================================================== */
+
+    botonActualizar.addEventListener(
+      "click",
+      async () => {
+
+        botonActualizar.disabled =
+          true;
+
+
+        botonActualizar.textContent =
+          "Actualizando...";
+
+
+        await cargarPedidos(
+          true
+        );
+
+
+        botonActualizar.disabled =
+          false;
+
+
+        botonActualizar.textContent =
+          "Actualizar pedidos";
+
+      }
+    );
+
+
+    /* =====================================================
+       ACTUALIZACIÓN AUTOMÁTICA
+
+       15 segundos es suficiente para un panel
+       administrativo de este tipo.
+       ===================================================== */
+
+    let intervaloPedidos =
+      null;
+
+
+    function iniciarActualizacionPedidos() {
+
+      if (
+        intervaloPedidos
+      ) {
+
+        return;
+
+      }
+
+
+      intervaloPedidos =
+        setInterval(
+          () => {
+
+            /*
+             * No recargamos mientras el administrador
+             * está interactuando con un selector.
+             */
+
+            const elementoActivo =
+              document.activeElement;
+
+
+            if (
+              elementoActivo &&
+              elementoActivo.matches(
+                ".order-status-select"
+              )
+            ) {
+
+              return;
+
+            }
+
+
+            cargarPedidos();
+
+          },
+          15000
+        );
+
+    }
+
+
+    function detenerActualizacionPedidos() {
+
+      if (
+        intervaloPedidos
+      ) {
+
+        clearInterval(
+          intervaloPedidos
+        );
+
+
+        intervaloPedidos =
+          null;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       NO CONSULTAR MIENTRAS LA PESTAÑA ESTÁ OCULTA
+       ===================================================== */
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+
+        if (
+          document.hidden
+        ) {
+
+          detenerActualizacionPedidos();
+
+        } else {
+
+          cargarPedidos();
+
+          iniciarActualizacionPedidos();
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       INICIAR
+       ===================================================== */
+
+    cargarPedidos();
+
+    iniciarActualizacionPedidos();
+
+
+  </script>
+
 
 </body>
+
 </html>

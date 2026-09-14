@@ -1,47 +1,407 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Carrito | Blushéa</title>
-  <link rel="stylesheet" href="style.css">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="Finaliza tu compra de forma rápida y segura en Blushéa Beauty Cosmetics."
+  >
+
+  <title>
+    Carrito | Blushéa Beauty Cosmetics
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
+
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <h1>BLUSHÉA</h1>
-    <span>Beauty Cosmetics</span>
-  </div>
 
-  <nav class="nav">
-    <a href="/">Inicio</a>
-    <a href="/#productos">Productos</a>
-  </nav>
-</header>
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
 
-<main class="cart-page">
-  <h2>Mis productos</h2>
+  <header class="topbar">
 
-  <div id="listaCarrito"></div>
+    <div class="brand">
 
-  <section class="cart-form">
-    <h3>Datos de entrega</h3>
+      <h1>
+        BLUSHÉA
+      </h1>
 
-    <input id="nombreCliente" type="text" placeholder="Nombre completo">
-    <input id="telefonoCliente" type="text" placeholder="Teléfono">
-    <input id="direccionCliente" type="text" placeholder="Dirección">
-    <input id="barrioCliente" type="text" placeholder="Barrio">
+      <span>
+        Beauty Cosmetics
+      </span>
 
-    <button id="calcularCarritoEnvio">Calcular envío</button>
+    </div>
 
-    <div id="resumenCarrito"></div>
 
-    <button id="confirmarPedido" class="buy-detail-button">
-      Confirmar pedido
-    </button>
-  </section>
-</main>
+    <nav class="nav">
 
-<script src="carrito.js"></script>
+      <a href="/">
+        Inicio
+      </a>
+
+      <a href="/#productos">
+        Productos
+      </a>
+
+      <a
+        href="/carrito.html"
+        class="cart-link"
+        aria-current="page"
+      >
+        Carrito
+      </a>
+
+    </nav>
+
+  </header>
+
+
+
+  <!-- =====================================================
+       CARRITO
+       ===================================================== -->
+
+  <main class="cart-page">
+
+
+    <!-- ===================================================
+         ENCABEZADO
+         =================================================== -->
+
+    <section class="cart-heading">
+
+      <span class="cart-eyebrow">
+        TU SELECCIÓN
+      </span>
+
+      <h1>
+        Tu beauty bag
+      </h1>
+
+      <p>
+        Revisa tus favoritos y completa los datos
+        para recibir tu pedido.
+      </p>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         LAYOUT
+         =================================================== -->
+
+    <div class="cart-layout">
+
+
+      <!-- =================================================
+           PRODUCTOS
+           ================================================= -->
+
+      <section class="cart-products">
+
+        <div class="cart-section-heading">
+
+          <div>
+
+            <span>
+              BLUSHÉA
+            </span>
+
+            <h2>
+              Mis productos
+            </h2>
+
+          </div>
+
+
+          <a
+            href="/#productos"
+            class="cart-continue-link"
+          >
+            Seguir comprando
+          </a>
+
+        </div>
+
+
+        <div
+          id="listaCarrito"
+          aria-live="polite"
+        >
+
+          <div class="empty-state">
+
+            <h3>
+              Cargando tu beauty bag...
+            </h3>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- =================================================
+           CHECKOUT
+           ================================================= -->
+
+      <aside class="cart-checkout">
+
+
+        <section class="cart-form">
+
+
+          <!-- ===============================================
+               TÍTULO
+               =============================================== -->
+
+          <div class="cart-form-heading">
+
+            <span>
+              ENTREGA
+            </span>
+
+            <h3>
+              ¿Dónde recibes tu pedido?
+            </h3>
+
+            <p>
+              Completa tus datos para calcular el
+              domicilio y continuar al pago.
+            </p>
+
+          </div>
+
+
+
+          <!-- ===============================================
+               DATOS PERSONALES
+               =============================================== -->
+
+          <div class="checkout-field">
+
+            <label for="nombreCliente">
+              Nombre completo
+            </label>
+
+            <input
+              id="nombreCliente"
+              name="nombre"
+              type="text"
+              placeholder="Ej. Carolina Gómez"
+              autocomplete="name"
+              maxlength="120"
+            >
+
+          </div>
+
+
+          <div class="checkout-field">
+
+            <label for="telefonoCliente">
+              Teléfono
+            </label>
+
+            <input
+              id="telefonoCliente"
+              name="telefono"
+              type="tel"
+              placeholder="Ej. 300 123 4567"
+              autocomplete="tel"
+              inputmode="tel"
+              maxlength="25"
+            >
+
+          </div>
+
+
+
+          <!-- ===============================================
+               DIRECCIÓN
+               =============================================== -->
+
+          <div class="checkout-field">
+
+            <label for="direccionCliente">
+              Dirección de entrega
+            </label>
+
+            <input
+              id="direccionCliente"
+              name="direccion"
+              type="text"
+              placeholder="Ej. Calle 10 # 35-20"
+              autocomplete="street-address"
+              maxlength="250"
+            >
+
+          </div>
+
+
+          <div class="checkout-field">
+
+            <label for="barrioCliente">
+              Barrio
+            </label>
+
+            <input
+              id="barrioCliente"
+              name="barrio"
+              type="text"
+              placeholder="Ej. Laureles"
+              autocomplete="address-level3"
+              maxlength="120"
+            >
+
+          </div>
+
+
+
+          <!-- ===============================================
+               CIUDAD
+               =============================================== -->
+
+          <div class="checkout-city">
+
+            <span>
+              Ciudad de entrega
+            </span>
+
+            <strong>
+              Medellín
+            </strong>
+
+          </div>
+
+
+
+          <!-- ===============================================
+               ENVÍO
+               =============================================== -->
+
+          <button
+            id="calcularCarritoEnvio"
+            type="button"
+            class="calculate-shipping-button"
+          >
+            Calcular domicilio
+          </button>
+
+
+
+          <!-- ===============================================
+               RESUMEN
+               =============================================== -->
+
+          <div
+            id="resumenCarrito"
+            class="cart-summary"
+            aria-live="polite"
+          ></div>
+
+
+
+          <!-- ===============================================
+               PAGO
+               =============================================== -->
+
+          <div class="checkout-payment-note">
+
+            <div>
+
+              <strong>
+                Pago seguro
+              </strong>
+
+              <p>
+                Al continuar serás redirigida a
+                Mercado Pago para completar tu pago.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <button
+            id="confirmarPedido"
+            type="button"
+            class="buy-detail-button checkout-button"
+          >
+            Continuar al pago
+          </button>
+
+
+
+          <!-- ===============================================
+               CONFIANZA
+               =============================================== -->
+
+          <div class="checkout-trust">
+
+            <span>
+              Compra protegida
+            </span>
+
+            <span>
+              Pago seguro
+            </span>
+
+            <span>
+              Seguimiento del pedido
+            </span>
+
+          </div>
+
+
+          <p class="checkout-legal">
+
+            Al continuar confirmas que los datos
+            de entrega ingresados son correctos.
+
+          </p>
+
+
+        </section>
+
+      </aside>
+
+
+    </div>
+
+
+  </main>
+
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+
+       La lógica permanece separada.
+       ===================================================== -->
+
+  <script src="carrito.js"></script>
+
+
 </body>
+
 </html>
