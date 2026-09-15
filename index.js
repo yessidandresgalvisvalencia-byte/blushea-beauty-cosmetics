@@ -2,17 +2,16 @@
 
 /* =========================================================
    BLUSHÉA BEAUTY COSMETICS
-   SERVER.JS
-   ========================================================= */
+   BACKEND PRINCIPAL
 
-
-/* =========================================================
-   VARIABLES DE ENTORNO
-   Deben cargarse ANTES de usar process.env
+   PRODUCTOS  -> SUPABASE POSTGRESQL
+   IMÁGENES   -> SUPABASE STORAGE
+   PEDIDOS    -> JSON (MIGRACIÓN POSTERIOR)
+   VENTAS     -> JSON (MIGRACIÓN POSTERIOR)
+   PAGOS      -> MERCADO PAGO
    ========================================================= */
 
 require("dotenv").config();
-
 
 /* =========================================================
    DEPENDENCIAS
@@ -23,6 +22,10 @@ const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
 const multer = require("multer");
+
+const {
+  createClient
+} = require("@supabase/supabase-js");
 
 const {
   MercadoPagoConfig,
@@ -41,12 +44,52 @@ const PORT =
 
 
 /* =========================================================
+   SUPABASE
+   ========================================================= */
+
+const SUPABASE_URL =
+  process.env.SUPABASE_URL;
+
+const SUPABASE_SECRET_KEY =
+  process.env.SUPABASE_SECRET_KEY;
+
+const SUPABASE_BUCKET =
+  "productos";
+
+
+if (
+  !SUPABASE_URL ||
+  !SUPABASE_SECRET_KEY
+) {
+
+  console.error(
+    "ERROR: faltan SUPABASE_URL o SUPABASE_SECRET_KEY."
+  );
+
+  process.exit(1);
+
+}
+
+
+const supabase =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_SECRET_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    }
+  );
+
+
+/* =========================================================
    MERCADO PAGO
    ========================================================= */
 
 const MERCADO_PAGO_ACCESS_TOKEN =
   process.env.MERCADO_PAGO_ACCESS_TOKEN;
-
 
 let preference = null;
 
@@ -58,7 +101,6 @@ if (MERCADO_PAGO_ACCESS_TOKEN) {
       accessToken:
         MERCADO_PAGO_ACCESS_TOKEN
     });
-
 
   preference =
     new Preference(mpClient);
@@ -95,27 +137,19 @@ app.use(
 
 
 /* =========================================================
-   RUTAS DEL PROYECTO
+   RUTAS LOCALES
+
+   IMPORTANTE:
+   productos.json y public/uploads YA NO se utilizan
+   para productos nuevos.
+
+   pedidos.json y ventas.json continúan temporalmente.
    ========================================================= */
 
 const publicDir =
   path.join(
     __dirname,
     "public"
-  );
-
-
-const uploadDir =
-  path.join(
-    publicDir,
-    "uploads"
-  );
-
-
-const dataPath =
-  path.join(
-    __dirname,
-    "productos.json"
   );
 
 
@@ -134,7 +168,7 @@ const ventasPath =
 
 
 /* =========================================================
-   CREAR CARPETAS Y ARCHIVOS NECESARIOS
+   ARCHIVOS NECESARIOS
    ========================================================= */
 
 function asegurarDirectorio(ruta) {
@@ -169,18 +203,13 @@ function asegurarArchivoJSON(ruta) {
 
 
 asegurarDirectorio(publicDir);
-
-asegurarDirectorio(uploadDir);
-
-asegurarArchivoJSON(dataPath);
-
 asegurarArchivoJSON(pedidosPath);
-
 asegurarArchivoJSON(ventasPath);
 
 
 /* =========================================================
-   FUNCIONES PARA LEER / GUARDAR JSON
+   JSON TEMPORAL
+   Solo pedidos y ventas.
    ========================================================= */
 
 function leerJSON(ruta) {
@@ -193,15 +222,12 @@ function leerJSON(ruta) {
         "utf8"
       );
 
-
     const datos =
       JSON.parse(contenido);
-
 
     return Array.isArray(datos)
       ? datos
       : [];
-
 
   } catch (error) {
 
@@ -209,7 +235,6 @@ function leerJSON(ruta) {
       `Error leyendo ${ruta}:`,
       error
     );
-
 
     return [];
 
@@ -253,7 +278,11 @@ app.use(
 
 /* =========================================================
    MULTER
-   SUBIDA SEGURA DE IMÁGENES
+
+   Ya NO escribe imágenes en el disco de Render.
+
+   Las mantiene temporalmente en RAM mientras la petición
+   se procesa y después se envían a Supabase Storage.
    ========================================================= */
 
 const TIPOS_IMAGEN_PERMITIDOS =
@@ -264,112 +293,21 @@ const TIPOS_IMAGEN_PERMITIDOS =
   ]);
 
 
-const storage =
-  multer.diskStorage({
-
-    destination:
-      (req, file, cb) => {
-
-        cb(
-          null,
-          uploadDir
-        );
-
-      },
-
-
-    filename:
-      (req, file, cb) => {
-
-        /*
-         * No confiamos en el nombre original
-         * enviado por el navegador.
-         */
-
-        let extension =
-          path
-            .extname(
-              file.originalname
-            )
-            .toLowerCase();
-
-
-        const extensionesPermitidas =
-          new Set([
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp"
-          ]);
-
-
-        if (
-          !extensionesPermitidas.has(
-            extension
-          )
-        ) {
-
-          if (
-            file.mimetype ===
-            "image/png"
-          ) {
-
-            extension = ".png";
-
-          } else if (
-            file.mimetype ===
-            "image/webp"
-          ) {
-
-            extension = ".webp";
-
-          } else {
-
-            extension = ".jpg";
-
-          }
-
-        }
-
-
-        const identificador =
-          crypto.randomBytes(16)
-            .toString("hex");
-
-
-        cb(
-          null,
-          `${Date.now()}-${identificador}${extension}`
-        );
-
-      }
-
-  });
-
-
 const upload =
   multer({
 
-    storage,
-
+    storage:
+      multer.memoryStorage(),
 
     limits: {
-
-      /*
-       * Máximo 8 MB por fotografía.
-       */
 
       fileSize:
         8 * 1024 * 1024,
 
-      /*
-       * 20 variantes + 1 imagen simple.
-       */
-
-      files: 21
+      files:
+        21
 
     },
-
 
     fileFilter:
       (req, file, cb) => {
@@ -388,7 +326,6 @@ const upload =
 
         }
 
-
         cb(
           null,
           true
@@ -400,7 +337,7 @@ const upload =
 
 
 /* =========================================================
-   UTILIDADES DE VALIDACIÓN
+   VALIDACIONES
    ========================================================= */
 
 function textoSeguro(
@@ -416,7 +353,6 @@ function textoSeguro(
 
   }
 
-
   return valor
     .trim()
     .slice(
@@ -427,13 +363,10 @@ function textoSeguro(
 }
 
 
-function numeroPositivo(
-  valor
-) {
+function numeroPositivo(valor) {
 
   const numero =
     Number(valor);
-
 
   if (
     !Number.isFinite(numero) ||
@@ -444,19 +377,15 @@ function numeroPositivo(
 
   }
 
-
   return numero;
 
 }
 
 
-function enteroNoNegativo(
-  valor
-) {
+function enteroNoNegativo(valor) {
 
   const numero =
     Number(valor);
-
 
   if (
     !Number.isInteger(numero) ||
@@ -467,23 +396,175 @@ function enteroNoNegativo(
 
   }
 
-
   return numero;
 
 }
 
 
 /* =========================================================
-   ELIMINAR ARCHIVO SUBIDO
+   EXTENSIÓN SEGURA SEGÚN MIME
    ========================================================= */
 
-function eliminarImagen(
-  rutaPublica
+function extensionPorMime(
+  mimetype
+) {
+
+  switch (mimetype) {
+
+    case "image/png":
+      return "png";
+
+    case "image/webp":
+      return "webp";
+
+    case "image/jpeg":
+    default:
+      return "jpg";
+
+  }
+
+}
+
+
+/* =========================================================
+   SUBIR IMAGEN A SUPABASE STORAGE
+   ========================================================= */
+
+async function subirImagenSupabase(
+  archivo,
+  carpetaProducto
 ) {
 
   if (
-    !rutaPublica ||
-    typeof rutaPublica !== "string"
+    !archivo ||
+    !archivo.buffer
+  ) {
+
+    throw new Error(
+      "Archivo de imagen inválido"
+    );
+
+  }
+
+
+  const extension =
+    extensionPorMime(
+      archivo.mimetype
+    );
+
+
+  const identificador =
+    crypto
+      .randomBytes(16)
+      .toString("hex");
+
+
+  const rutaStorage =
+    `${carpetaProducto}/${Date.now()}-${identificador}.${extension}`;
+
+
+  const {
+    error
+  } =
+    await supabase
+      .storage
+      .from(SUPABASE_BUCKET)
+      .upload(
+        rutaStorage,
+        archivo.buffer,
+        {
+          contentType:
+            archivo.mimetype,
+
+          cacheControl:
+            "31536000",
+
+          upsert:
+            false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Error Supabase Storage:",
+      error
+    );
+
+    throw new Error(
+      "No se pudo guardar la fotografía"
+    );
+
+  }
+
+
+  const {
+    data
+  } =
+    supabase
+      .storage
+      .from(SUPABASE_BUCKET)
+      .getPublicUrl(
+        rutaStorage
+      );
+
+
+  if (
+    !data ||
+    !data.publicUrl
+  ) {
+
+    /*
+     * Si por alguna razón no conseguimos la URL,
+     * eliminamos el objeto que acabamos de crear.
+     */
+
+    await supabase
+      .storage
+      .from(SUPABASE_BUCKET)
+      .remove([
+        rutaStorage
+      ]);
+
+    throw new Error(
+      "No se pudo generar la URL de la fotografía"
+    );
+
+  }
+
+
+  return {
+
+    url:
+      data.publicUrl,
+
+    path:
+      rutaStorage
+
+  };
+
+}
+
+
+/* =========================================================
+   BORRAR OBJETOS DE SUPABASE STORAGE
+   ========================================================= */
+
+async function eliminarObjetosStorage(
+  rutas
+) {
+
+  const rutasLimpias =
+    [
+      ...new Set(
+        rutas.filter(Boolean)
+      )
+    ];
+
+
+  if (
+    rutasLimpias.length === 0
   ) {
 
     return;
@@ -491,54 +572,21 @@ function eliminarImagen(
   }
 
 
-  try {
-
-    /*
-     * Solo permitimos eliminar archivos
-     * ubicados dentro de /uploads.
-     */
-
-    if (
-      !rutaPublica.startsWith(
-        "/uploads/"
-      )
-    ) {
-
-      return;
-
-    }
-
-
-    const nombreArchivo =
-      path.basename(
-        rutaPublica
+  const {
+    error
+  } =
+    await supabase
+      .storage
+      .from(SUPABASE_BUCKET)
+      .remove(
+        rutasLimpias
       );
 
 
-    const rutaFisica =
-      path.join(
-        uploadDir,
-        nombreArchivo
-      );
-
-
-    if (
-      fs.existsSync(
-        rutaFisica
-      )
-    ) {
-
-      fs.unlinkSync(
-        rutaFisica
-      );
-
-    }
-
-
-  } catch (error) {
+  if (error) {
 
     console.error(
-      "Error eliminando imagen:",
+      "No se pudieron eliminar algunas imágenes de Storage:",
       error
     );
 
@@ -548,76 +596,190 @@ function eliminarImagen(
 
 
 /* =========================================================
-   LIMPIAR IMÁGENES DE UNA PETICIÓN FALLIDA
+   OBTENER RUTA DE STORAGE DESDE URL PÚBLICA
+
+   Esto permite borrar imágenes posteriormente sin tener
+   que agregar otra columna a la tabla productos.
    ========================================================= */
 
-function eliminarArchivosPeticion(
-  req
+function obtenerRutaStorageDesdeURL(
+  url
 ) {
 
-  if (!req.files) {
+  if (
+    !url ||
+    typeof url !== "string"
+  ) {
 
-    return;
+    return null;
 
   }
 
 
-  const archivos = [];
+  try {
+
+    const marcador =
+      `/storage/v1/object/public/${SUPABASE_BUCKET}/`;
 
 
-  Object.values(
-    req.files
-  ).forEach(
-    grupo => {
-
-      if (
-        Array.isArray(grupo)
-      ) {
-
-        archivos.push(
-          ...grupo
-        );
-
-      }
-
-    }
-  );
+    const posicion =
+      url.indexOf(
+        marcador
+      );
 
 
-  archivos.forEach(
-    archivo => {
+    if (
+      posicion === -1
+    ) {
 
-      if (
-        archivo &&
-        archivo.filename
-      ) {
-
-        eliminarImagen(
-          `/uploads/${archivo.filename}`
-        );
-
-      }
+      return null;
 
     }
-  );
+
+
+    const ruta =
+      url.slice(
+        posicion +
+        marcador.length
+      );
+
+
+    return decodeURIComponent(
+      ruta
+    );
+
+  } catch (error) {
+
+    console.error(
+      "No se pudo interpretar URL de Storage:",
+      error
+    );
+
+    return null;
+
+  }
 
 }
 
 
 /* =========================================================
-   API - OBTENER PRODUCTOS
+   CONVERTIR PRODUCTO SUPABASE -> FORMATO DEL FRONTEND
+
+   La base usa snake_case.
+   Tu catálogo actual usa camelCase.
+
+   De esta forma NO necesitamos modificar ahora script.js,
+   producto.html ni carrito.js.
+   ========================================================= */
+
+function mapearProducto(
+  producto
+) {
+
+  return {
+
+    id:
+      producto.id,
+
+    nombre:
+      producto.nombre,
+
+    categoria:
+      producto.categoria,
+
+    precio:
+      Number(
+        producto.precio
+      ),
+
+    stock:
+      Number(
+        producto.stock
+      ),
+
+    descripcion:
+      producto.descripcion,
+
+    tieneTonos:
+      Boolean(
+        producto.tiene_tonos
+      ),
+
+    tonos:
+      Array.isArray(
+        producto.tonos
+      )
+        ? producto.tonos
+        : [],
+
+    variantes:
+      Array.isArray(
+        producto.variantes
+      )
+        ? producto.variantes
+        : [],
+
+    imagen:
+      producto.imagen,
+
+    fechaCreacion:
+      producto.fecha_creacion
+
+  };
+
+}
+
+
+/* =========================================================
+   API - OBTENER PRODUCTOS DESDE SUPABASE
    ========================================================= */
 
 app.get(
   "/api/productos",
-  (req, res) => {
+  async (req, res) => {
 
     try {
 
-      const productos =
-        leerJSON(
-          dataPath
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from("productos")
+          .select("*")
+          .order(
+            "fecha_creacion",
+            {
+              ascending:
+                false
+            }
+          );
+
+
+      if (error) {
+
+        console.error(
+          "Error Supabase obteniendo productos:",
+          error
         );
+
+        return res
+          .status(500)
+          .json({
+
+            mensaje:
+              "Error leyendo productos"
+
+          });
+
+      }
+
+
+      const productos =
+        (data || [])
+          .map(
+            mapearProducto
+          );
 
 
       res.json(
@@ -633,12 +795,14 @@ app.get(
       );
 
 
-      res.status(500).json({
+      res
+        .status(500)
+        .json({
 
-        mensaje:
-          "Error leyendo productos"
+          mensaje:
+            "Error leyendo productos"
 
-      });
+        });
 
     }
 
@@ -647,16 +811,7 @@ app.get(
 
 
 /* =========================================================
-   API - CREAR PRODUCTO
-
-   Admite:
-
-   PRODUCTO NORMAL
-   imagen
-
-   PRODUCTO CON VARIANTES
-   nombresVariantes
-   imagenesVariantes
+   API - CREAR PRODUCTO EN SUPABASE
    ========================================================= */
 
 app.post(
@@ -665,26 +820,35 @@ app.post(
   upload.fields([
 
     {
-      name: "imagen",
-      maxCount: 1
+      name:
+        "imagen",
+      maxCount:
+        1
     },
 
     {
-      name: "imagenesVariantes",
-      maxCount: 20
+      name:
+        "imagenesVariantes",
+      maxCount:
+        20
     }
 
   ]),
 
-  (req, res) => {
+  async (req, res) => {
+
+    /*
+     * Guardaremos aquí todas las rutas que se hayan subido
+     * durante esta petición.
+     *
+     * Si la base de datos falla después, podemos limpiar
+     * esas imágenes para no dejar archivos huérfanos.
+     */
+
+    const objetosSubidos = [];
+
 
     try {
-
-      const productos =
-        leerJSON(
-          dataPath
-        );
-
 
       /* =====================================================
          DATOS PRINCIPALES
@@ -734,11 +898,6 @@ app.post(
 
       if (!nombre) {
 
-        eliminarArchivosPeticion(
-          req
-        );
-
-
         return res
           .status(400)
           .json({
@@ -752,11 +911,6 @@ app.post(
 
 
       if (!categoria) {
-
-        eliminarArchivosPeticion(
-          req
-        );
-
 
         return res
           .status(400)
@@ -774,11 +928,6 @@ app.post(
         precio === null
       ) {
 
-        eliminarArchivosPeticion(
-          req
-        );
-
-
         return res
           .status(400)
           .json({
@@ -795,11 +944,6 @@ app.post(
         stock === null
       ) {
 
-        eliminarArchivosPeticion(
-          req
-        );
-
-
         return res
           .status(400)
           .json({
@@ -814,11 +958,6 @@ app.post(
 
       if (!descripcion) {
 
-        eliminarArchivosPeticion(
-          req
-        );
-
-
         return res
           .status(400)
           .json({
@@ -831,12 +970,22 @@ app.post(
       }
 
 
-      /* =====================================================
-         VARIANTES
-         ===================================================== */
+      /*
+       * Cada producto obtiene una carpeta única
+       * dentro del bucket.
+       */
+
+      const carpetaProducto =
+        crypto.randomUUID();
+
 
       let variantes = [];
+      let imagenPrincipal = "";
 
+
+      /* =====================================================
+         PRODUCTO CON TONOS / VARIANTES
+         ===================================================== */
 
       if (tieneTonos) {
 
@@ -844,11 +993,6 @@ app.post(
           req.body.nombresVariantes ||
           [];
 
-
-        /*
-         * Con una sola variante Express devuelve
-         * string. Con varias devuelve array.
-         */
 
         if (
           !Array.isArray(
@@ -886,11 +1030,6 @@ app.post(
           nombresVariantes.length === 0
         ) {
 
-          eliminarArchivosPeticion(
-            req
-          );
-
-
           return res
             .status(400)
             .json({
@@ -908,11 +1047,6 @@ app.post(
           imagenesVariantes.length
         ) {
 
-          eliminarArchivosPeticion(
-            req
-          );
-
-
           return res
             .status(400)
             .json({
@@ -924,11 +1058,6 @@ app.post(
 
         }
 
-
-        /*
-         * Evitamos nombres repetidos:
-         * Rosa, Rosa, Rosa...
-         */
 
         const nombresNormalizados =
           nombresVariantes.map(
@@ -947,11 +1076,6 @@ app.post(
           nombresNormalizados.length
         ) {
 
-          eliminarArchivosPeticion(
-            req
-          );
-
-
           return res
             .status(400)
             .json({
@@ -964,46 +1088,54 @@ app.post(
         }
 
 
-        variantes =
-          nombresVariantes.map(
-            (
-              nombreVariante,
-              index
-            ) => ({
+        /*
+         * Subimos cada fotografía a Supabase.
+         */
 
-              nombre:
-                nombreVariante,
+        for (
+          let index = 0;
+          index < nombresVariantes.length;
+          index += 1
+        ) {
 
-              imagen:
-                `/uploads/${imagenesVariantes[index].filename}`
+          const imagenSubida =
+            await subirImagenSupabase(
+              imagenesVariantes[index],
+              carpetaProducto
+            );
 
-            })
+
+          objetosSubidos.push(
+            imagenSubida.path
           );
 
-      }
 
+          variantes.push({
 
-      /* =====================================================
-         IMAGEN PRINCIPAL
-         ===================================================== */
+            nombre:
+              nombresVariantes[index],
 
-      let imagenPrincipal =
-        "";
+            imagen:
+              imagenSubida.url
 
+          });
 
-      if (tieneTonos) {
+        }
 
-        /*
-         * La primera variante se convierte en
-         * la fotografía principal del producto.
-         */
 
         imagenPrincipal =
           variantes[0]
             ?.imagen ||
           "";
 
-      } else {
+      }
+
+
+      /* =====================================================
+         PRODUCTO SIN TONOS
+         ===================================================== */
+
+      else {
 
         const imagenSimple =
           req.files
@@ -1011,20 +1143,42 @@ app.post(
             ?.[0];
 
 
-        if (imagenSimple) {
+        if (!imagenSimple) {
 
-          imagenPrincipal =
-            `/uploads/${imagenSimple.filename}`;
+          return res
+            .status(400)
+            .json({
+
+              mensaje:
+                "Debes subir al menos una fotografía del producto"
+
+            });
 
         }
+
+
+        const imagenSubida =
+          await subirImagenSupabase(
+            imagenSimple,
+            carpetaProducto
+          );
+
+
+        objetosSubidos.push(
+          imagenSubida.path
+        );
+
+
+        imagenPrincipal =
+          imagenSubida.url;
 
       }
 
 
       if (!imagenPrincipal) {
 
-        eliminarArchivosPeticion(
-          req
+        await eliminarObjetosStorage(
+          objetosSubidos
         );
 
 
@@ -1040,15 +1194,6 @@ app.post(
       }
 
 
-      /* =====================================================
-         ARRAY TONOS
-
-         Lo mantenemos porque el catálogo/carrito
-         antiguo ya utiliza producto.tonos.
-
-         Así no rompemos compatibilidad.
-         ===================================================== */
-
       const tonos =
         variantes.map(
           variante =>
@@ -1057,53 +1202,71 @@ app.post(
 
 
       /* =====================================================
-         NUEVO PRODUCTO
+         INSERTAR PRODUCTO EN POSTGRESQL
          ===================================================== */
 
-      const nuevoProducto = {
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from("productos")
+          .insert({
 
-        id:
-          Date.now(),
+            nombre,
 
-        nombre,
+            categoria,
 
-        categoria,
+            precio,
 
-        precio,
+            stock,
 
-        stock,
+            descripcion,
 
-        descripcion,
+            tiene_tonos:
+              tieneTonos,
 
-        tieneTonos,
+            tonos,
 
-        tonos,
+            variantes,
 
-        variantes,
+            imagen:
+              imagenPrincipal
 
-        imagen:
-          imagenPrincipal,
-
-        fechaCreacion:
-          new Date()
-            .toISOString()
-
-      };
-
-
-      /* =====================================================
-         GUARDAR
-         ===================================================== */
-
-      productos.push(
-        nuevoProducto
-      );
+          })
+          .select("*")
+          .single();
 
 
-      guardarJSON(
-        dataPath,
-        productos
-      );
+      if (error) {
+
+        console.error(
+          "Error insertando producto en Supabase:",
+          error
+        );
+
+
+        await eliminarObjetosStorage(
+          objetosSubidos
+        );
+
+
+        return res
+          .status(500)
+          .json({
+
+            mensaje:
+              "No se pudo guardar el producto"
+
+          });
+
+      }
+
+
+      const nuevoProducto =
+        mapearProducto(
+          data
+        );
 
 
       res
@@ -1122,13 +1285,13 @@ app.post(
     } catch (error) {
 
       /*
-       * Si ocurre un error después de que Multer
-       * guardó las imágenes, intentamos borrarlas
-       * para no dejar archivos huérfanos.
+       * Si alguna parte de la operación falla,
+       * intentamos borrar cualquier fotografía
+       * que ya hubiese llegado a Storage.
        */
 
-      eliminarArchivosPeticion(
-        req
+      await eliminarObjetosStorage(
+        objetosSubidos
       );
 
 
@@ -1154,12 +1317,12 @@ app.post(
 
 
 /* =========================================================
-   API - ELIMINAR PRODUCTO
+   API - ELIMINAR PRODUCTO DE SUPABASE
    ========================================================= */
 
 app.delete(
   "/api/productos/:id",
-  (req, res) => {
+  async (req, res) => {
 
     try {
 
@@ -1169,19 +1332,42 @@ app.delete(
         );
 
 
-      let productos =
-        leerJSON(
-          dataPath
+      /* =====================================================
+         OBTENER PRODUCTO
+         ===================================================== */
+
+      const {
+        data: producto,
+        error: errorBusqueda
+      } =
+        await supabase
+          .from("productos")
+          .select("*")
+          .eq(
+            "id",
+            id
+          )
+          .maybeSingle();
+
+
+      if (errorBusqueda) {
+
+        console.error(
+          "Error buscando producto:",
+          errorBusqueda
         );
 
 
-      const producto =
-        productos.find(
-          productoActual =>
-            String(
-              productoActual.id
-            ) === id
-        );
+        return res
+          .status(500)
+          .json({
+
+            mensaje:
+              "Error buscando producto"
+
+          });
+
+      }
 
 
       if (!producto) {
@@ -1198,33 +1384,9 @@ app.delete(
       }
 
 
-      /*
-       * Primero actualizamos productos.json.
-       */
-
-      productos =
-        productos.filter(
-          productoActual =>
-            String(
-              productoActual.id
-            ) !== id
-        );
-
-
-      guardarJSON(
-        dataPath,
-        productos
-      );
-
-
-      /*
-       * Utilizamos Set para evitar intentar borrar
-       * dos veces la misma imagen.
-       *
-       * La imagen principal de un producto con
-       * variantes también es la imagen de la
-       * primera variante.
-       */
+      /* =====================================================
+         REUNIR IMÁGENES
+         ===================================================== */
 
       const imagenes =
         new Set();
@@ -1267,14 +1429,60 @@ app.delete(
       }
 
 
-      imagenes.forEach(
-        imagen => {
+      const rutasStorage =
+        [...imagenes]
+          .map(
+            obtenerRutaStorageDesdeURL
+          )
+          .filter(Boolean);
 
-          eliminarImagen(
-            imagen
+
+      /* =====================================================
+         BORRAR REGISTRO DE POSTGRESQL
+
+         Primero quitamos el producto del catálogo.
+         Si Storage falla posteriormente, como máximo queda
+         un archivo huérfano, no un producto con imagen rota.
+         ===================================================== */
+
+      const {
+        error: errorEliminacion
+      } =
+        await supabase
+          .from("productos")
+          .delete()
+          .eq(
+            "id",
+            id
           );
 
-        }
+
+      if (errorEliminacion) {
+
+        console.error(
+          "Error eliminando producto de Supabase:",
+          errorEliminacion
+        );
+
+
+        return res
+          .status(500)
+          .json({
+
+            mensaje:
+              "Error eliminando producto"
+
+          });
+
+      }
+
+
+      /* =====================================================
+         BORRAR FOTOGRAFÍAS
+         ===================================================== */
+
+      await eliminarObjetosStorage(
+        rutasStorage
       );
 
 
@@ -1350,43 +1558,24 @@ app.post(
       const distanciasMedellin = {
 
         "el poblado": 6,
-
         "laureles": 4,
-
         "belén": 5,
-
         "belen": 5,
-
         "prado": 3,
-
         "centro": 2,
-
         "manrique": 6,
-
         "robledo": 7,
-
         "castilla": 7,
-
         "aranjuez": 5,
-
         "buenos aires": 4,
-
         "guayabal": 6,
-
         "estadio": 4,
-
         "floresta": 5,
-
         "calasanz": 6,
-
         "san javier": 7,
-
         "popular": 8,
-
         "santa cruz": 7,
-
         "doce de octubre": 8,
-
         "villa hermosa": 5
 
       };
@@ -1586,14 +1775,6 @@ app.post(
 
       }
 
-
-      /*
-       * Por ahora conservamos la estructura de
-       * productos que ya utiliza tu carrito.
-       *
-       * Más adelante conviene recalcular precios
-       * y stock exclusivamente desde el servidor.
-       */
 
       const productos =
         req.body.productos.map(
@@ -1866,24 +2047,17 @@ app.get(
 
 
 /* =========================================================
-   ESTADOS PERMITIDOS DEL PEDIDO
+   ESTADOS PERMITIDOS
    ========================================================= */
 
 const ESTADOS_PEDIDO =
   new Set([
-
     "Pendiente",
-
     "Confirmado",
-
     "Preparando",
-
     "Enviado",
-
     "Entregado",
-
     "Cancelado"
-
   ]);
 
 
@@ -1979,11 +2153,6 @@ app.put(
               }
             );
 
-
-        /*
-         * Evitamos duplicar accidentalmente una
-         * venta con el mismo ID.
-         */
 
         const yaExisteVenta =
           ventas.some(
@@ -2238,11 +2407,6 @@ app.post(
       }
 
 
-      /*
-       * En producción utiliza APP_BASE_URL
-       * desde Render.
-       */
-
       const baseUrl =
         (
           process.env.APP_BASE_URL ||
@@ -2331,7 +2495,7 @@ app.post(
 
 
 /* =========================================================
-   ERROR DE MULTER / ARCHIVOS
+   ERRORES DE MULTER
    ========================================================= */
 
 app.use(
@@ -2421,7 +2585,7 @@ app.use(
 
 
 /* =========================================================
-   404 PARA API
+   404 API
    ========================================================= */
 
 app.use(
@@ -2492,6 +2656,14 @@ app.listen(
 
     console.log(
       `Local: http://localhost:${PORT}`
+    );
+
+    console.log(
+      "Productos: Supabase PostgreSQL"
+    );
+
+    console.log(
+      "Imágenes: Supabase Storage"
     );
 
   }
