@@ -1,0 +1,1 @@
+"use client";import {useCart} from "@/store/cart";export function AddProduct({product}:{product:{id:string;name:string;price:number}}){const add=useCart(s=>s.add);return <button className="buy" onClick={()=>add(product)}>AGREGAR AL CARRITO</button>}
