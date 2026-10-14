@@ -1,0 +1,1 @@
+import type {MetadataRoute} from "next";export default function manifest():MetadataRoute.Manifest{return{name:"GLAMOUR STUDIO",short_name:"GLAMOUR",description:"Beauty, elevated.",start_url:"/",display:"standalone",background_color:"#F5F1EB",theme_color:"#171512",icons:[]}}
