@@ -1,0 +1,1 @@
+import {StoreShell} from "@/components/ui/store-shell";export default function StoreLayout({children}:{children:React.ReactNode}){return <><div className="announcement">ENVÍO GRATIS EN COLOMBIA DESDE $180.000 · GLAM POINTS EN CADA COMPRA</div><StoreShell/>{children}</>}
