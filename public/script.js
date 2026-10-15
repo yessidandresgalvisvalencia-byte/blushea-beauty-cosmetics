@@ -692,7 +692,7 @@ function crearWhatsApp(
   mensaje += ".";
 
 
-  return `https://wa.me/573001112233?text=${encodeURIComponent(mensaje)}`;
+  return `https://wa.me/573022769069?text=${encodeURIComponent(mensaje)}`;
 }
 
 
