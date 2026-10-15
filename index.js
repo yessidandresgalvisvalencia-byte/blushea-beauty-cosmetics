@@ -1564,8 +1564,13 @@ app.delete(
 
 const PRECIO_KM = 1200;
 const ORIGEN_ENVIO = "Buenos Aires, Medellín, Antioquia, Colombia";
+const CACHE_GEOCODIFICACION = new Map();
+const CACHE_GEOCODIFICACION_MS = 24 * 60 * 60 * 1000;
 
 async function geocodificarEnvio(consulta) {
+  const clave = consulta.toLocaleLowerCase("es-CO").trim();
+  const cache = CACHE_GEOCODIFICACION.get(clave);
+  if (cache && cache.expira > Date.now()) return cache.coordenadas;
   const parametros = new URLSearchParams({
     q: consulta,
     format: "jsonv2",
@@ -1578,7 +1583,8 @@ async function geocodificarEnvio(consulta) {
       headers: {
         "User-Agent": "BlusheaBeautyShipping/1.0",
         "Accept-Language": "es-CO,es"
-      }
+      },
+      signal: AbortSignal.timeout(8000)
     }
   );
   if (!respuesta.ok) return null;
@@ -1586,13 +1592,23 @@ async function geocodificarEnvio(consulta) {
   if (!Array.isArray(datos) || !datos[0]) return null;
   const lat = Number(datos[0].lat);
   const lon = Number(datos[0].lon);
-  return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  const coordenadas = { lat, lon };
+  CACHE_GEOCODIFICACION.set(clave, {
+    coordenadas,
+    expira: Date.now() + CACHE_GEOCODIFICACION_MS
+  });
+  if (CACHE_GEOCODIFICACION.size > 1000) {
+    CACHE_GEOCODIFICACION.delete(CACHE_GEOCODIFICACION.keys().next().value);
+  }
+  return coordenadas;
 }
 
 async function distanciaConduccionKm(origen, destino) {
   const ruta = origen.lon + "," + origen.lat + ";" + destino.lon + "," + destino.lat;
   const respuesta = await fetch(
-    "https://router.project-osrm.org/route/v1/driving/" + ruta + "?overview=false"
+    "https://router.project-osrm.org/route/v1/driving/" + ruta + "?overview=false",
+    { signal: AbortSignal.timeout(8000) }
   );
   if (!respuesta.ok) return null;
   const datos = await respuesta.json();
