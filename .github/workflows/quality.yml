@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install --package-lock-only
-      - run: npm ci
+      - run: npm install
+      - run: git diff --exit-code package-lock.json
       - run: npm run typecheck
       - run: npm run build
       - run: npm audit --omit=dev --audit-level=critical
