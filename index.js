@@ -2028,7 +2028,7 @@ app.post(
         if (destinoPedido) break;
       }
 
-      if (!destinoPedido) {
+      if (!tarifaManualPedido && !destinoPedido) {
         return res.status(422).json({
           mensaje: "No pudimos ubicar la zona de entrega en Medellín."
         });
