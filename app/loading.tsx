@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="skeleton-page" aria-busy="true"><div className="skeleton hero-skeleton"/><div className="skeleton-row">{Array.from({length:4},(_,i)=><div className="skeleton card-skeleton" key={i}/>)}</div></main>}
