@@ -1,0 +1,1 @@
+"use client";export default function ErrorPage({reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="error-state"><span>GLAMOUR STUDIO</span><h1>Algo no salió perfecto.</h1><p>Tu experiencia sigue protegida. Intenta nuevamente.</p><button onClick={reset}>REINTENTAR</button></main>}
