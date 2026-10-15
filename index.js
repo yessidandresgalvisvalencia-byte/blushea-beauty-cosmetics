@@ -1683,7 +1683,20 @@ app.post("/api/calcular-envio", async (req, res) => {
 
     if (!destino) {
       return res.status(422).json({
-        mensaje: "No pudimos ubicar esa dirección en Medellín. Revisa la nomenclatura e intenta de nuevo."
+        mensaje: "No pudimos ubicar la zona de entrega. Escribe un barrio reconocido de Medellín."
+      });
+    }
+
+    // Seguridad: Nominatim puede devolver coincidencias homónimas fuera del
+    // Valle de Aburrá. No cotizamos una ruta si las coordenadas no corresponden
+    // razonablemente a Medellín.
+    const dentroDeMedellin =
+      destino.lat >= 6.10 && destino.lat <= 6.38 &&
+      destino.lon >= -75.70 && destino.lon <= -75.45;
+
+    if (!dentroDeMedellin) {
+      return res.status(422).json({
+        mensaje: "La dirección o el barrio no parecen corresponder a Medellín."
       });
     }
 
