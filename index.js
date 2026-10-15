@@ -1831,6 +1831,27 @@ app.post(
         );
 
 
+      const productosValidos = productos.every(producto =>
+        producto.nombre &&
+        Number.isFinite(producto.precio) &&
+        producto.precio >= 0 &&
+        Number.isInteger(producto.cantidad) &&
+        producto.cantidad >= 1 &&
+        producto.cantidad <= 99
+      );
+
+      if (!productosValidos) {
+        return res.status(400).json({
+          mensaje: "Hay productos con precio o cantidad no válidos"
+        });
+      }
+
+      const subtotalCalculado = productos.reduce(
+        (acumulado, producto) => acumulado + producto.precio * producto.cantidad,
+        0
+      );
+
+
       const subtotal =
         Number(
           req.body.subtotal
@@ -1878,6 +1899,7 @@ app.post(
         !Number.isFinite(envio) ||
         !Number.isFinite(total) ||
         subtotal < 0 ||
+        Math.abs(subtotal - subtotalCalculado) > 0.01 ||
         envio < 0 ||
         total <= 0 ||
         envio !== envioServidor ||
@@ -1915,11 +1937,11 @@ app.post(
 
         productos,
 
-        subtotal,
+        subtotal: subtotalCalculado,
 
         envio: envioServidor,
 
-        total: subtotal + envioServidor,
+        total: subtotalCalculado + envioServidor,
 
         distanciaEnvioKm: Number(distanciaPedidoKm.toFixed(2)),
         distanciaCobradaEnvioKm: distanciaCobradaPedidoKm,
