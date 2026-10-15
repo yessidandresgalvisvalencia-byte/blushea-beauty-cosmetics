@@ -1562,140 +1562,91 @@ app.delete(
    ENVÍOS
    ========================================================= */
 
-const PRECIO_KM =
-  Number(
-    process.env.PRECIO_KM ||
-    1500
+const PRECIO_KM = 1200;
+const ORIGEN_ENVIO = "Buenos Aires, Medellín, Antioquia, Colombia";
+
+async function geocodificarEnvio(consulta) {
+  const parametros = new URLSearchParams({
+    q: consulta,
+    format: "jsonv2",
+    limit: "1",
+    countrycodes: "co"
+  });
+  const respuesta = await fetch(
+    "https://nominatim.openstreetmap.org/search?" + parametros.toString(),
+    {
+      headers: {
+        "User-Agent": "BlusheaBeautyShipping/1.0",
+        "Accept-Language": "es-CO,es"
+      }
+    }
   );
+  if (!respuesta.ok) return null;
+  const datos = await respuesta.json();
+  if (!Array.isArray(datos) || !datos[0]) return null;
+  const lat = Number(datos[0].lat);
+  const lon = Number(datos[0].lon);
+  return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+}
 
+async function distanciaConduccionKm(origen, destino) {
+  const ruta = origen.lon + "," + origen.lat + ";" + destino.lon + "," + destino.lat;
+  const respuesta = await fetch(
+    "https://router.project-osrm.org/route/v1/driving/" + ruta + "?overview=false"
+  );
+  if (!respuesta.ok) return null;
+  const datos = await respuesta.json();
+  const metros = Number(datos && datos.routes && datos.routes[0] && datos.routes[0].distance);
+  return Number.isFinite(metros) ? metros / 1000 : null;
+}
 
-app.post(
-  "/api/calcular-envio",
-  (req, res) => {
+app.post("/api/calcular-envio", async (req, res) => {
+  try {
+    const direccion = textoSeguro(req.body.direccion, 250);
+    const barrio = textoSeguro(req.body.barrio, 120);
 
-    try {
-
-      const barrio =
-        textoSeguro(
-          req.body.barrio,
-          120
-        );
-
-
-      if (!barrio) {
-
-        return res
-          .status(400)
-          .json({
-
-            mensaje:
-              "El barrio es obligatorio"
-
-          });
-
-      }
-
-
-      const distanciasMedellin = {
-
-        "el poblado": 6,
-        "laureles": 4,
-        "belén": 5,
-        "belen": 5,
-        "prado": 3,
-        "centro": 2,
-        "manrique": 6,
-        "robledo": 7,
-        "castilla": 7,
-        "aranjuez": 5,
-        "buenos aires": 4,
-        "guayabal": 6,
-        "estadio": 4,
-        "floresta": 5,
-        "calasanz": 6,
-        "san javier": 7,
-        "popular": 8,
-        "santa cruz": 7,
-        "doce de octubre": 8,
-        "villa hermosa": 5
-
-      };
-
-
-      const barrioNormalizado =
-        barrio
-          .toLocaleLowerCase(
-            "es-CO"
-          )
-          .trim();
-
-
-      const distanciaKm =
-        distanciasMedellin[
-          barrioNormalizado
-        ];
-
-
-      if (!distanciaKm) {
-
-        return res
-          .status(404)
-          .json({
-
-            mensaje:
-              "Por ahora no tenemos ese barrio registrado. Escríbenos por WhatsApp para confirmar el domicilio."
-
-          });
-
-      }
-
-
-      const valorEnvio =
-        distanciaKm *
-        PRECIO_KM;
-
-
-      res.json({
-
-        ciudad:
-          "Medellín",
-
-        barrio,
-
-        distanciaKm,
-
-        distanciaCobradaKm:
-          distanciaKm,
-
-        precioKm:
-          PRECIO_KM,
-
-        valorEnvio
-
+    if (!direccion || !barrio) {
+      return res.status(400).json({
+        mensaje: "La dirección y el barrio son obligatorios"
       });
-
-
-    } catch (error) {
-
-      console.error(
-        "Error calculando envío:",
-        error
-      );
-
-
-      res
-        .status(500)
-        .json({
-
-          mensaje:
-            "Error calculando envío"
-
-        });
-
     }
 
+    const destinoTexto = direccion + ", " + barrio + ", Medellín, Antioquia, Colombia";
+    const origen = await geocodificarEnvio(ORIGEN_ENVIO);
+    const destino = await geocodificarEnvio(destinoTexto);
+
+    if (!origen || !destino) {
+      return res.status(422).json({
+        mensaje: "No pudimos ubicar esa dirección. Revisa la dirección y el barrio."
+      });
+    }
+
+    const distanciaKm = await distanciaConduccionKm(origen, destino);
+    if (!Number.isFinite(distanciaKm) || distanciaKm < 0) {
+      return res.status(503).json({
+        mensaje: "No pudimos calcular la ruta del domicilio en este momento."
+      });
+    }
+
+    const distanciaCobradaKm = Math.max(1, Math.ceil(distanciaKm));
+    const valorEnvio = distanciaCobradaKm * PRECIO_KM;
+
+    return res.json({
+      ciudad: "Medellín",
+      origen: "Buenos Aires",
+      barrio,
+      distanciaKm: Number(distanciaKm.toFixed(2)),
+      distanciaCobradaKm,
+      precioKm: PRECIO_KM,
+      valorEnvio
+    });
+  } catch (error) {
+    console.error("Error calculando envío:", error);
+    return res.status(500).json({
+      mensaje: "No pudimos calcular el domicilio."
+    });
   }
-);
+});
 
 
 /* =========================================================
