@@ -270,7 +270,12 @@ app.use(
     publicDir,
     {
       index: "index.html",
-      maxAge: "1h"
+      maxAge: 0,
+      setHeaders: (res, archivo) => {
+        if (/\.html$/i.test(archivo)) {
+          res.setHeader("Cache-Control", "no-store, must-revalidate");
+        }
+      }
     }
   )
 );
