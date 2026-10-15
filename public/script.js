@@ -397,7 +397,12 @@ function pintarProductos(productos) {
           <h3>${escaparHTML(producto.nombre)}</h3>
           <p class="product-description">${escaparHTML(producto.descripcion)}</p>
           ${tonos.length ? `<div class="catalog-variants"><span>Tonos:</span><p class="product-description">${tonos.map(escaparHTML).join(" · ")}</p></div>` : ""}
-          <div class="product-meta"><strong>Precio por confirmar</strong><small class="stock-out">Aún no disponible para comprar</small></div>
+          <div class="product-meta"><strong>Precio por confirmar</strong><small class="stock-out">Producto en preparación</small></div>
+          <div class="product-actions">
+            <button type="button" class="btn-card" disabled aria-disabled="true" title="Se habilitará cuando confirmemos precio y stock">
+              Agregar al carrito
+            </button>
+          </div>
         </div>
       `;
       contenedorProductos.appendChild(tarjeta);
@@ -604,17 +609,25 @@ function pintarProductos(productos) {
 
         <div class="product-actions">
 
+          <button
+            type="button"
+            class="btn-card"
+            data-add-cart
+            ${agotado ? "disabled aria-disabled=\"true\"" : ""}
+          >
+            ${agotado ? "Agotado" : "Agregar al carrito"}
+          </button>
+
           <a
             href="${crearURLProducto(
               producto.id,
               variantes[0]?.nombre || ""
             )}"
-            class="btn-card"
+            class="btn-card-outline"
             data-product-link
           >
             Ver producto
           </a>
-
 
           <a
             href="${crearWhatsApp(
@@ -652,6 +665,69 @@ function pintarProductos(productos) {
       variantes
     );
 
+    activarAgregarCarritoTarjeta(
+      tarjeta,
+      producto,
+      variantes
+    );
+
+  });
+}
+
+
+/* =========================================================
+   AGREGAR AL CARRITO DESDE EL CATÁLOGO
+   ========================================================= */
+
+function activarAgregarCarritoTarjeta(tarjeta, producto, variantes) {
+  const boton = tarjeta.querySelector("[data-add-cart]");
+
+  if (!boton || boton.disabled) {
+    return;
+  }
+
+  boton.addEventListener("click", () => {
+    const tono = tarjeta.dataset.selectedVariant || variantes[0]?.nombre || "";
+
+    if (variantes.length > 0 && !tono) {
+      return;
+    }
+
+    let carrito = [];
+
+    try {
+      const guardado = JSON.parse(localStorage.getItem("carritoBlushea"));
+      carrito = Array.isArray(guardado) ? guardado : [];
+    } catch (error) {
+      console.error("Error leyendo carrito:", error);
+    }
+
+    const id = producto.id;
+    const existente = carrito.find(
+      item => String(item.id) === String(id) && String(item.tono || "") === String(tono)
+    );
+
+    if (existente) {
+      existente.cantidad = Math.max(1, Number(existente.cantidad) || 1) + 1;
+    } else {
+      carrito.push({
+        id,
+        nombre: String(producto.nombre || "Producto"),
+        precio: Math.max(0, Number(producto.precio) || 0),
+        imagen: String(producto.imagen || ""),
+        cantidad: 1,
+        tono: String(tono || "")
+      });
+    }
+
+    localStorage.setItem("carritoBlushea", JSON.stringify(carrito));
+    actualizarContadorCarrito();
+
+    const textoAnterior = boton.textContent;
+    boton.textContent = "Agregado ✓";
+    setTimeout(() => {
+      boton.textContent = textoAnterior;
+    }, 1200);
   });
 }
 
