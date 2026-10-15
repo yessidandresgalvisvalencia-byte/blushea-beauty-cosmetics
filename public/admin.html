@@ -81,6 +81,23 @@
          FORMULARIO PRODUCTO
          ===================================================== -->
 
+    <section class="admin-shipping-card" style="margin:24px 0;padding:22px;border:1px solid #eadbd7;border-radius:22px;background:#fff;">
+      <p style="letter-spacing:.18em;font-size:11px;">PERFIL ADMINISTRADOR · DOMICILIOS</p>
+      <h2>Precios de envío por barrio</h2>
+      <p>Define aquí el domicilio. Cuando una clienta escriba ese barrio, este precio tendrá prioridad y no dependerá del mapa.</p>
+      <form id="formTarifaEnvio" style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+        <label>Barrio<input id="tarifaBarrio" type="text" placeholder="Ej. Poblado" required style="display:block;width:100%;margin-top:6px;"></label>
+        <label>Precio COP<input id="tarifaPrecio" type="number" min="1" step="100" placeholder="Ej. 12000" required style="display:block;width:100%;margin-top:6px;"></label>
+        <button type="submit">Guardar domicilio</button>
+      </form>
+      <div id="mensajeTarifaEnvio" aria-live="polite" style="margin-top:10px;"></div>
+      <div id="listaTarifasEnvio" style="margin-top:16px;"></div>
+    </section>
+
+    <!-- =====================================================
+         FORMULARIO PRODUCTO
+         ===================================================== -->
+
     <form
       id="formProducto"
       class="admin-form"
@@ -1293,6 +1310,52 @@
     /* =====================================================
        INICIALIZACIÓN
        ===================================================== */
+
+    const formTarifaEnvio = document.getElementById("formTarifaEnvio");
+    const listaTarifasEnvio = document.getElementById("listaTarifasEnvio");
+    const mensajeTarifaEnvio = document.getElementById("mensajeTarifaEnvio");
+
+    async function cargarTarifasEnvio() {
+      try {
+        const respuesta = await fetch("/api/admin/tarifas-envio");
+        const tarifas = await respuesta.json();
+        listaTarifasEnvio.innerHTML = tarifas.length
+          ? tarifas.map(t => `
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee;">
+                <span><strong>${escaparHTML(t.barrio)}</strong> · $${Number(t.precio).toLocaleString("es-CO")} COP</span>
+                <button type="button" onclick="eliminarTarifaEnvio('${encodeURIComponent(t.clave)}')">Eliminar</button>
+              </div>`).join("")
+          : "<p>Aún no has definido tarifas manuales.</p>";
+      } catch {
+        listaTarifasEnvio.innerHTML = "<p class=\"error\">No se pudieron cargar las tarifas.</p>";
+      }
+    }
+
+    formTarifaEnvio?.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      const barrio = document.getElementById("tarifaBarrio").value.trim();
+      const precio = Number(document.getElementById("tarifaPrecio").value);
+      const respuesta = await fetch("/api/admin/tarifas-envio", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({barrio, precio})
+      });
+      const resultado = await respuesta.json().catch(() => ({}));
+      mensajeTarifaEnvio.innerHTML = respuesta.ok
+        ? "<p class=\"success\">✓ Precio de domicilio guardado.</p>"
+        : `<p class="error">${escaparHTML(resultado.mensaje || "No se pudo guardar.")}</p>`;
+      if (respuesta.ok) {
+        formTarifaEnvio.reset();
+        await cargarTarifasEnvio();
+      }
+    });
+
+    async function eliminarTarifaEnvio(clave) {
+      await fetch("/api/admin/tarifas-envio/" + clave, {method:"DELETE"});
+      await cargarTarifasEnvio();
+    }
+
+    cargarTarifasEnvio();
 
     cargarProductosAdmin();
 
