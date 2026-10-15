@@ -3387,3 +3387,15 @@ body:has(.orders-page) {
     right: 30px;
   }
 }
+
+
+/* Ajuste fino catálogo: imágenes ligeramente más compactas */
+.product-image {
+  width: 96%;
+  margin-inline: auto;
+  aspect-ratio: 0.86;
+}
+
+.product-image-link {
+  padding-inline: 2%;
+}
