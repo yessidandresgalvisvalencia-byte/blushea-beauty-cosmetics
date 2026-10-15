@@ -432,7 +432,9 @@ function pintarProductos(productos) {
 
 
     const agotado =
-      stock <= 0;
+      stock <= 0 || !(precio > 0);
+
+    const pendiente = producto.proximamente === true;
 
 
     const tarjeta =
@@ -492,7 +494,7 @@ function pintarProductos(productos) {
               `
               : `
                 <div class="product-image-placeholder">
-                  <span>BLUSHÉA</span>
+                  <span>${pendiente ? "FOTO PRÓXIMAMENTE" : "BLUSHÉA"}</span>
                 </div>
               `
           }
@@ -501,7 +503,7 @@ function pintarProductos(productos) {
             agotado
               ? `
                 <span class="product-sold-out">
-                  AGOTADO
+                  ${pendiente ? "PRÓXIMAMENTE" : "AGOTADO"}
                 </span>
               `
               : ""
@@ -559,14 +561,14 @@ function pintarProductos(productos) {
         <div class="product-meta">
 
           <strong>
-            ${formatearPrecio(precio)}
+            ${pendiente ? "Precio por confirmar" : formatearPrecio(precio)}
           </strong>
 
           <small class="${agotado ? "stock-out" : "stock-ok"}">
 
             ${
               agotado
-                ? "Agotado"
+                ? (pendiente ? "En preparación" : "Agotado")
                 : stock <= 3
                   ? `Solo quedan ${stock}`
                   : "Disponible"
@@ -614,7 +616,7 @@ function pintarProductos(productos) {
             data-add-cart
             ${agotado ? "disabled aria-disabled=\"true\"" : ""}
           >
-            ${producto.proximamente === true ? "Agregar al carrito" : (agotado ? "Agotado" : "Agregar al carrito")}
+            Agregar al carrito
           </button>
 
         </div>
