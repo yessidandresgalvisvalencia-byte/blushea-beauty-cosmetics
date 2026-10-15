@@ -755,7 +755,7 @@ const CATALOGO_ACCESORIOS_DOCUMENTO = CATALOGO_ACCESORIOS_DOCUMENTO_BASE.map(pre
 
 const CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
   {id:"makeup-ruby-rose-feels",nombre:"Corrector Líquido Ruby Rose Feels",categoria:"Correctores",descripcion:"Corrector líquido con aplicador incorporado para complementar la rutina y trabajar ojeras, pequeñas imperfecciones o áreas donde quieras unificar visualmente el tono de la piel.",tonos:["Caramelo 50","Amendoa 30","Castanha 20"]},
-  {id:"makeup-atenea-concealer",nombre:"Corrector Atenea 1st Scene Concealer",categoria:"Correctores",descripcion:"Corrector de maquillaje para unificar visualmente el tono y trabajar imperfecciones localizadas.",tonos:["00 Light","0.5 Warm Ivory","01 Natural","02 Beige","03 Vanilla","04 Ivory","4.5 Olive Beige","05 Espresso","5.5 Desert","06 Orange","07 Rose","08 Cocoa","09 Lila","10 Yellow","11 Green","12 Blue"]},
+  {id:"makeup-atenea-concealer",nombre:"Corrector Atenea 1st Scene Concealer",categoria:"Correctores",descripcion:"Corrector de maquillaje para unificar visualmente el tono y trabajar imperfecciones localizadas.",tonos:["00 Light","0.5 Warm Ivory","01 Natural","02 Beige","03 Vanilla","04 Ivory","4.5 Olive Beige","05 Espresso","5.5 Desert","06 Orange","07 Rose","08 Cocoa","09 Lila"]},
   {id:"makeup-anik-concealer",nombre:"Corrector de Ojeras Ani-K Makeup",categoria:"Correctores",descripcion:"Corrector líquido diseñado para complementar tu maquillaje y ayudarte a conseguir una apariencia más uniforme y definida. Presentación de 4.3 ml.",tonos:["00 Snow","01 Bone","02 Radiant","03 Honey","04 Ginger","05 Golden Brown"]},
   {id:"makeup-atenea-foundation",nombre:"Base líquida Atenea 1st Scene",categoria:"Bases",descripcion:"Base líquida para ayudar a unificar visualmente el tono del rostro.",tonos:["Light","Porcelain","Cream","Vainilla","Almond","Olive","Temple","Sand","Ebony"]},
   {id:"makeup-bloomshell-foundation",nombre:"Bloomshell My Foundation 2 en 1",categoria:"Bases",descripcion:"Producto de maquillaje que combina funciones de base y corrector.",tonos:["1","2","2.5","3","4","4.2","4.5","4.8","5","6","6.5","7"]},
@@ -1809,7 +1809,7 @@ app.post(
 
 
       if (req.body.productos.some(producto =>
-        CATALOGO_MAQUILLAJE_PROXIMAMENTE.some(demo => String(demo.id) === String(producto.id))
+        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => String(demo.id) === String(producto.id))
       )) {
         return res.status(409).json({
           mensaje: "Estos productos tienen precios de prueba. Puedes probar el carrito, pero no finalizar un pedido real."
@@ -2453,7 +2453,7 @@ app.post(
 
 
       if (pedido.productos.some(producto =>
-        CATALOGO_MAQUILLAJE_PROXIMAMENTE.some(demo => String(demo.id) === String(producto.id))
+        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => String(demo.id) === String(producto.id))
       )) {
         return res.status(409).json({
           mensaje: "Pago deshabilitado para productos con precios de prueba."
