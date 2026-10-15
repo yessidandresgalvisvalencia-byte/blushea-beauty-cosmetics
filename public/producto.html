@@ -697,10 +697,9 @@
 
 
 
-      const textoBoton =
-        stock > 0
-          ? "Agregar al carrito"
-          : "Producto agotado";
+      const pendiente = producto.proximamente === true;
+      const disponible = !pendiente && stock > 0 && precio > 0;
+      const textoBoton = disponible ? "Agregar al carrito" : "Agregar al carrito";
 
 
 
@@ -736,7 +735,7 @@
                   `
                   : `
                     <div class="detail-image-placeholder">
-                      BLUSHÉA
+                      ${pendiente ? "FOTO PRÓXIMAMENTE" : "BLUSHÉA"}
                     </div>
                   `
               }
@@ -777,9 +776,7 @@
 
             <div class="detail-price">
 
-              ${formatearPrecio(
-                precio
-              )}
+              ${pendiente ? "Precio por confirmar" : formatearPrecio(precio)}
 
             </div>
 
@@ -787,20 +784,20 @@
             <div
               id="estadoStockProducto"
               class="${
-                stock > 0
+                disponible
                   ? "stock-ok"
                   : "stock-out"
               }"
             >
 
               ${
-                stock > 0
+                disponible
                   ? `Disponible · ${stock} ${
                       stock === 1
                         ? "unidad"
                         : "unidades"
                     }`
-                  : "Producto agotado"
+                  : (pendiente ? "Próximamente · en preparación" : "Producto agotado")
               }
 
             </div>
@@ -845,7 +842,7 @@
                   id="menosCantidad"
                   aria-label="Disminuir cantidad"
                   ${
-                    stock <= 0
+                    !disponible
                       ? "disabled"
                       : ""
                   }
@@ -942,7 +939,7 @@
               id="botonComprarDetalle"
               class="buy-detail-button"
               ${
-                stock <= 0
+                !disponible
                   ? "disabled"
                   : ""
               }
