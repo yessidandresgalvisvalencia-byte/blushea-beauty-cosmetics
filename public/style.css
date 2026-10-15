@@ -3205,3 +3205,185 @@ body:has(.orders-page) {
 .detail-added-confirmation strong { font-weight: 750; }
 .detail-added-confirmation span { opacity: .76; font-size: 13px; }
 .detail-added-confirmation a { width: fit-content; margin-top: 3px; font-weight: 700; text-decoration: underline; }
+
+
+/* =========================================================
+   MAKEUP HERO · COLORFUL BEAUTY EDIT
+   ========================================================= */
+.hero {
+  background:
+    radial-gradient(circle at 12% 15%, rgba(255, 79, 147, .24), transparent 30%),
+    radial-gradient(circle at 82% 12%, rgba(255, 188, 207, .8), transparent 31%),
+    radial-gradient(circle at 72% 88%, rgba(180, 60, 110, .18), transparent 30%),
+    linear-gradient(135deg, #fff7fa 0%, #ffe7ef 42%, #f8d4df 72%, #fff1e9 100%);
+}
+
+.hero::before {
+  color: rgba(154, 31, 82, .045);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+}
+
+.hero-kicker {
+  width: fit-content;
+  margin: 0 0 18px;
+  padding: 9px 15px;
+  border: 1px solid rgba(158, 40, 91, .16);
+  border-radius: 999px;
+  background: rgba(255,255,255,.55);
+  color: #9e285b;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2.2px;
+  backdrop-filter: blur(12px);
+}
+
+.hero h2 {
+  max-width: 800px;
+  font-size: clamp(48px, 6.4vw, 88px);
+}
+
+.hero h2 em {
+  color: #b72f68;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.hero-super-frase {
+  margin-top: 18px !important;
+  color: #8f234f !important;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.2vw, 32px) !important;
+  font-style: italic;
+  line-height: 1.25 !important;
+}
+
+.hero-visual {
+  min-height: 580px;
+  align-items: flex-end;
+  border-radius: 46% 46% 34px 34px;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255,255,255,.96), transparent 24%),
+    radial-gradient(circle at 80% 34%, rgba(255, 73, 137, .55), transparent 24%),
+    radial-gradient(circle at 18% 70%, rgba(139, 36, 82, .32), transparent 25%),
+    linear-gradient(145deg, #ffc8d9 0%, #f29db9 43%, #e57c9e 70%, #f8c9b8 100%);
+  box-shadow: 0 32px 90px rgba(128, 31, 70, .22);
+}
+
+.hero-visual::before {
+  width: 330px;
+  height: 330px;
+  top: 54px;
+  border: 1px solid rgba(255,255,255,.75);
+  box-shadow: 0 0 0 28px rgba(255,255,255,.08);
+}
+
+.hero-makeup-title {
+  position: absolute;
+  z-index: 1;
+  top: 110px;
+  left: clamp(28px, 5vw, 70px);
+  color: #fff;
+  text-shadow: 0 10px 30px rgba(100,20,54,.18);
+}
+
+.hero-makeup-title small {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 3.5px;
+}
+
+.hero-makeup-title strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 5vw, 72px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: .9;
+}
+
+.makeup-orb {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  box-shadow: 0 16px 35px rgba(97, 20, 52, .24);
+}
+
+.makeup-orb-lip {
+  width: 82px;
+  height: 82px;
+  right: 32px;
+  top: 54px;
+  background: linear-gradient(145deg, #d62f6d, #8f1748);
+  transform: rotate(9deg);
+}
+
+.makeup-orb-blush {
+  width: 105px;
+  height: 105px;
+  right: 55px;
+  bottom: 150px;
+  background: linear-gradient(145deg, #ffb2c8, #d85e89);
+  transform: rotate(-10deg);
+}
+
+.makeup-sparkle {
+  position: absolute;
+  z-index: 2;
+  color: rgba(255,255,255,.9);
+  font-size: 42px;
+}
+
+.sparkle-one { top: 50px; left: 34px; }
+.sparkle-two { top: 235px; right: 45px; font-size: 30px; }
+
+.floating-card {
+  background: rgba(255, 248, 251, .9);
+  border-color: rgba(255,255,255,.85);
+}
+
+@media (max-width: 760px) {
+  .hero {
+    padding-top: 48px;
+  }
+
+  .hero h2 {
+    font-size: clamp(43px, 13vw, 62px);
+  }
+
+  .hero-visual {
+    min-height: 480px;
+    border-radius: 42% 42% 28px 28px;
+  }
+
+  .hero-makeup-title {
+    top: 95px;
+    left: 30px;
+  }
+
+  .hero-makeup-title strong {
+    font-size: 52px;
+  }
+
+  .makeup-orb-lip {
+    width: 68px;
+    height: 68px;
+    right: 24px;
+  }
+
+  .makeup-orb-blush {
+    width: 86px;
+    height: 86px;
+    right: 30px;
+  }
+}
