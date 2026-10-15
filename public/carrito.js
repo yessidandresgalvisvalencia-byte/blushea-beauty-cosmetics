@@ -976,11 +976,20 @@ async function calcularEnvioAutomatico() {
   botonCalcularEnvio.textContent = "Calculando...";
 
   try {
-    const respuesta = await fetch("/api/calcular-envio", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ direccion, barrio, ciudad: "Medellín" })
-    });
+    const controlador = new AbortController();
+    const limite = setTimeout(() => controlador.abort(), 12000);
+
+    let respuesta;
+    try {
+      respuesta = await fetch("/api/calcular-envio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ direccion, barrio, ciudad: "Medellín" }),
+        signal: controlador.signal
+      });
+    } finally {
+      clearTimeout(limite);
+    }
 
     let resultado = {};
     try { resultado = await respuesta.json(); } catch {}
