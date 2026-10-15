@@ -166,6 +166,12 @@ const ventasPath =
     "ventas.json"
   );
 
+const tarifasEnvioPath =
+  path.join(
+    __dirname,
+    "tarifas-envio.json"
+  );
+
 
 /* =========================================================
    ARCHIVOS NECESARIOS
@@ -205,6 +211,7 @@ function asegurarArchivoJSON(ruta) {
 asegurarDirectorio(publicDir);
 asegurarArchivoJSON(pedidosPath);
 asegurarArchivoJSON(ventasPath);
+asegurarArchivoJSON(tarifasEnvioPath);
 
 
 /* =========================================================
@@ -1646,6 +1653,58 @@ async function distanciaConduccionKm(origen, destino) {
   return Number.isFinite(metros) ? metros / 1000 : null;
 }
 
+function claveBarrioEnvio(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es-CO")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tarifaManualBarrio(barrio) {
+  const clave = claveBarrioEnvio(barrio);
+  return leerJSON(tarifasEnvioPath).find(item => item.clave === clave) || null;
+}
+
+app.get("/api/admin/tarifas-envio", (req, res) => {
+  res.json(leerJSON(tarifasEnvioPath));
+});
+
+app.post("/api/admin/tarifas-envio", (req, res) => {
+  const barrio = textoSeguro(req.body.barrio, 120);
+  const precio = numeroPositivo(req.body.precio);
+  const clave = claveBarrioEnvio(barrio);
+
+  if (!barrio || !clave || !precio) {
+    return res.status(400).json({ mensaje: "Barrio y precio son obligatorios." });
+  }
+
+  const tarifas = leerJSON(tarifasEnvioPath);
+  const existente = tarifas.find(item => item.clave === clave);
+  const registro = {
+    clave,
+    barrio,
+    precio: Math.round(precio),
+    actualizadoEn: new Date().toISOString()
+  };
+
+  if (existente) Object.assign(existente, registro);
+  else tarifas.push(registro);
+
+  guardarJSON(tarifasEnvioPath, tarifas);
+  return res.json({ mensaje: "Tarifa guardada correctamente.", tarifa: registro });
+});
+
+app.delete("/api/admin/tarifas-envio/:clave", (req, res) => {
+  const clave = claveBarrioEnvio(decodeURIComponent(req.params.clave || ""));
+  const tarifas = leerJSON(tarifasEnvioPath);
+  const nuevas = tarifas.filter(item => item.clave !== clave);
+  guardarJSON(tarifasEnvioPath, nuevas);
+  res.json({ mensaje: "Tarifa eliminada." });
+});
+
 app.post("/api/calcular-envio", async (req, res) => {
   try {
     const direccion = textoSeguro(req.body.direccion, 250);
@@ -1654,6 +1713,20 @@ app.post("/api/calcular-envio", async (req, res) => {
     if (!direccion || !barrio) {
       return res.status(400).json({
         mensaje: "La dirección y el barrio son obligatorios"
+      });
+    }
+
+    const tarifaManual = tarifaManualBarrio(barrio);
+    if (tarifaManual) {
+      return res.json({
+        ciudad: "Medellín",
+        origen: "Tarifa definida por administrador",
+        barrio,
+        distanciaKm: null,
+        distanciaCobradaKm: null,
+        precioKm: null,
+        valorEnvio: tarifaManual.precio,
+        tarifaManual: true
       });
     }
 
@@ -1933,8 +2006,9 @@ app.post(
         );
 
 
-      // El domicilio nunca se confía al navegador: se recalcula en servidor
-      // usando el mismo origen y la misma tarifa vigentes.
+      // El domicilio nunca se confía al navegador. Si el administrador
+      // definió una tarifa para el barrio, esa tarifa es la autoridad.
+      const tarifaManualPedido = tarifaManualBarrio(cliente.barrio);
       const origenPedido = { lat: 6.2357, lon: -75.5526 };
       const direccionPedidoNormalizada = normalizarDireccionMedellin(cliente.direccion);
       const consultasDestinoPedido = [
@@ -1960,16 +2034,24 @@ app.post(
         });
       }
 
-      const distanciaPedidoKm = await distanciaConduccionKm(origenPedido, destinoPedido);
+      let distanciaPedidoKm = null;
+      let distanciaCobradaPedidoKm = null;
+      let envioServidor;
 
-      if (!Number.isFinite(distanciaPedidoKm) || distanciaPedidoKm < 0) {
-        return res.status(503).json({
-          mensaje: "No pudimos validar la ruta del domicilio en este momento."
-        });
+      if (tarifaManualPedido) {
+        envioServidor = tarifaManualPedido.precio;
+      } else {
+        distanciaPedidoKm = await distanciaConduccionKm(origenPedido, destinoPedido);
+
+        if (!Number.isFinite(distanciaPedidoKm) || distanciaPedidoKm < 0) {
+          return res.status(503).json({
+            mensaje: "No pudimos validar la ruta del domicilio en este momento."
+          });
+        }
+
+        distanciaCobradaPedidoKm = Math.max(1, Math.ceil(distanciaPedidoKm));
+        envioServidor = distanciaCobradaPedidoKm * PRECIO_KM;
       }
-
-      const distanciaCobradaPedidoKm = Math.max(1, Math.ceil(distanciaPedidoKm));
-      const envioServidor = distanciaCobradaPedidoKm * PRECIO_KM;
 
       if (
         !Number.isFinite(subtotal) ||
@@ -2020,7 +2102,7 @@ app.post(
 
         total: subtotalCalculado + envioServidor,
 
-        distanciaEnvioKm: Number(distanciaPedidoKm.toFixed(2)),
+        distanciaEnvioKm: Number.isFinite(distanciaPedidoKm) ? Number(distanciaPedidoKm.toFixed(2)) : null,
         distanciaCobradaEnvioKm: distanciaCobradaPedidoKm,
         precioKmEnvio: PRECIO_KM,
 
