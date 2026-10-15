@@ -3189,3 +3189,19 @@ body:has(.orders-page) {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* Confirmación del carrito en la ficha de producto */
+.detail-added-confirmation {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(116,72,82,.18);
+  border-radius: 16px;
+  background: #fff7f7;
+  display: grid;
+  gap: 5px;
+  animation: cartConfirmationIn .22s ease-out both;
+}
+.detail-added-confirmation strong { font-weight: 750; }
+.detail-added-confirmation span { opacity: .76; font-size: 13px; }
+.detail-added-confirmation a { width: fit-content; margin-top: 3px; font-weight: 700; text-decoration: underline; }
