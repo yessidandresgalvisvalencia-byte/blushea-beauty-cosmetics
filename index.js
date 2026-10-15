@@ -1667,7 +1667,8 @@ app.post("/api/calcular-envio", async (req, res) => {
     const consultasDestino = [
       direccionNormalizada + ", Medellín, Antioquia, Colombia",
       direccionNormalizada + ", " + barrio + ", Medellín, Colombia",
-      direccion + ", Medellín, Antioquia, Colombia"
+      direccion + ", Medellín, Antioquia, Colombia",
+      barrio + ", Medellín, Antioquia, Colombia"
     ];
 
     let destino = null;
@@ -1921,22 +1922,28 @@ app.post(
 
       // El domicilio nunca se confía al navegador: se recalcula en servidor
       // usando el mismo origen y la misma tarifa vigentes.
-      const origenPedido = await geocodificarEnvio(ORIGEN_ENVIO);
+      const origenPedido = { lat: 6.2357, lon: -75.5526 };
+      const direccionPedidoNormalizada = normalizarDireccionMedellin(cliente.direccion);
       const consultasDestinoPedido = [
-        cliente.direccion + ", " + cliente.barrio + ", Medellín, Antioquia, Colombia",
+        direccionPedidoNormalizada + ", Medellín, Antioquia, Colombia",
+        direccionPedidoNormalizada + ", " + cliente.barrio + ", Medellín, Colombia",
         cliente.direccion + ", Medellín, Antioquia, Colombia",
-        cliente.direccion + ", Medellín, Colombia"
+        cliente.barrio + ", Medellín, Antioquia, Colombia"
       ];
 
       let destinoPedido = null;
       for (const consulta of consultasDestinoPedido) {
-        destinoPedido = await geocodificarEnvio(consulta);
+        try {
+          destinoPedido = await geocodificarEnvio(consulta);
+        } catch (error) {
+          console.warn("Geocodificación de pedido fallida:", consulta, error.message);
+        }
         if (destinoPedido) break;
       }
 
-      if (!origenPedido || !destinoPedido) {
+      if (!destinoPedido) {
         return res.status(422).json({
-          mensaje: "No pudimos validar la dirección de entrega en Medellín. Revisa únicamente la dirección."
+          mensaje: "No pudimos ubicar la zona de entrega en Medellín."
         });
       }
 
