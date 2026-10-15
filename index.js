@@ -853,7 +853,7 @@ app.get(
       return res
         .status(200)
         .json(
-          CATALOGO_MAQUILLAJE_PROXIMAMENTE
+          CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO)
         );
 
     }
