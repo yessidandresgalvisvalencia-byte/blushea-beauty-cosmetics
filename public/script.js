@@ -1105,28 +1105,32 @@ function obtenerZonaProducto(producto) {
     producto?.descripcion
   ].join(" "));
 
-  // Ojos: sombras, pestañas, delineadores, máscaras y productos de cejas.
-  if (/sombra|pestana|pestañ|delineador|eyeliner|mascara|rimel|rímel|ceja|brow/.test(texto)) {
+  // OJOS · maquillaje, definición, pestañas y cejas.
+  if (/sombra|paleta.*ojo|pestana|pestañ|delineador|eyeliner|mascara.*pest|rimel|rímel|ceja|brow|lapiz.*ojo|lápiz.*ojo/.test(texto)) {
     return "Ojos";
   }
 
-  // Rostro: preparación/cobertura, color y definición del rostro.
-  if (/\bbase\b|foundation|corrector|concealer|polvo|contorno|bronzer|rubor|blush|iluminador|highlighter|tinta liquida/.test(texto)) {
-    return "Rostro";
-  }
-
-  if (/labial|labios|lipstick|lip gloss|gloss|balsamo labial|tinta labial/.test(texto)) {
+  // LABIOS · color, brillo, perfilado y cuidado específicamente labial.
+  if (/labial|labios|lipstick|lip gloss|lipgloss|gloss.*lab|balsamo.*lab|bálsamo.*lab|tinta.*lab|perfilador.*lab|delineador.*lab|lip liner|aceite.*lab|lip oil/.test(texto)) {
     return "Labios";
   }
 
-  if (/skincare|serum|suero|crema facial|limpiador facial|tonico facial|protector solar/.test(texto)) {
+  // SKINCARE · cuidado facial, no maquillaje de cobertura/color.
+  if (/skincare|serum|sérum|suero facial|crema facial|hidratante facial|limpiador facial|agua micelar|desmaquillante|tonico facial|tónico facial|protector solar|bloqueador facial|mascarilla facial|exfoliante facial|contorno de ojos|esencia facial|primer skincare/.test(texto)) {
     return "Skincare";
   }
 
-  if (/brocha|pincel|esponja|beauty blender/.test(texto)) {
+  // BROCHAS · incluye herramientas de aplicación como Beauty Blender/esponjas.
+  if (/brocha|pincel|beauty blender|beautyblender|esponja.*maquill|esponja.*cosmetic|aplicador.*maquill/.test(texto)) {
     return "Brochas";
   }
 
+  // ROSTRO · maquillaje de tez/cobertura/color.
+  if (/\bbase\b|foundation|corrector|concealer|polvo|contorno|bronzer|rubor|blush|iluminador|highlighter|tinta liquida|tinta líquida|primer.*maquill|fijador.*maquill/.test(texto)) {
+    return "Rostro";
+  }
+
+  // ACCESORIOS · organización y herramientas que no son brochas/esponjas.
   if (/cosmetiquera|washbag|estuche|organizador/.test(texto)) {
     return "Accesorios";
   }
