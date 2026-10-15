@@ -753,14 +753,17 @@ const CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
   {id:"makeup-la-colors-truly-matte",nombre:"L.A. Colors Truly Matte",categoria:"Bases",descripcion:"Base de maquillaje de acabado mate.",tonos:[]},
   {id:"makeup-vogue-foundation",nombre:"Base Vogue",categoria:"Bases",descripcion:"Base de maquillaje.",tonos:[]},
   {id:"makeup-dolce-bella-concealer",nombre:"Corrector Dolce Bella",categoria:"Correctores",descripcion:"Correctores de color para maquillaje correctivo.",tonos:["1 Amarillo","3 Verde","8 Naranja"]}
-].map(producto => ({
+].map((producto, indice) => ({
   ...producto,
-  precio: null,
-  stock: 0,
+  // Valores solo para probar la experiencia de compra; NO son precios de venta.
+  precio: [18900, 32900, 21900, 48900, 39900, 29900, 45900, 31900, 25900, 17900][indice],
+  stock: 50,
   tieneTonos: producto.tonos.length > 0,
   variantes: [],
   imagen: "",
-  proximamente: true
+  proximamente: false,
+  precioPrueba: true,
+  soloDemostracion: true
 }));
 
 
@@ -1814,6 +1817,14 @@ app.post(
       }
 
 
+      if (req.body.productos.some(producto =>
+        CATALOGO_MAQUILLAJE_PROXIMAMENTE.some(demo => String(demo.id) === String(producto.id))
+      )) {
+        return res.status(409).json({
+          mensaje: "Estos productos tienen precios de prueba. Puedes probar el carrito, pero no finalizar un pedido real."
+        });
+      }
+
       const productos =
         req.body.productos.map(
           producto => ({
@@ -2389,6 +2400,14 @@ app.post(
 
       }
 
+
+      if (pedido.productos.some(producto =>
+        CATALOGO_MAQUILLAJE_PROXIMAMENTE.some(demo => String(demo.id) === String(producto.id))
+      )) {
+        return res.status(409).json({
+          mensaje: "Pago deshabilitado para productos con precios de prueba."
+        });
+      }
 
       const items =
         pedido.productos.map(
