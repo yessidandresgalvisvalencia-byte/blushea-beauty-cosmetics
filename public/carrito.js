@@ -955,239 +955,89 @@ function actualizarBotonCompra() {
 
 
 /* =========================================================
-   CALCULAR ENVÍO
+   CALCULAR ENVÍO AUTOMÁTICAMENTE
    ========================================================= */
 
-botonCalcularEnvio?.addEventListener(
-  "click",
-  async () => {
+let temporizadorEnvio = null;
+let solicitudEnvioActual = 0;
 
-    const barrio =
-      barrioCliente
-        ?.value
-        .trim() ||
-      "";
+async function calcularEnvioAutomatico() {
+  const direccion = direccionCliente?.value.trim() || "";
+  const barrio = barrioCliente?.value.trim() || "";
 
+  if (!direccion || !barrio || carrito.length === 0) {
+    invalidarEnvio();
+    return;
+  }
 
-    const direccion =
-      direccionCliente
-        ?.value
-        .trim() ||
-      "";
+  const solicitud = ++solicitudEnvioActual;
 
+  botonCalcularEnvio.disabled = true;
+  botonCalcularEnvio.textContent = "Calculando...";
 
-    if (!direccion) {
+  try {
+    const respuesta = await fetch("/api/calcular-envio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ direccion, barrio, ciudad: "Medellín" })
+    });
 
-      alert(
-        "Escribe la dirección de entrega."
-      );
+    let resultado = {};
+    try { resultado = await respuesta.json(); } catch {}
 
-      direccionCliente?.focus();
+    // Ignora respuestas viejas si la clienta siguió escribiendo.
+    if (solicitud !== solicitudEnvioActual) return;
 
-      return;
-
-    }
-
-
-    if (!barrio) {
-
-      alert(
-        "Escribe el barrio."
-      );
-
-      barrioCliente?.focus();
-
-      return;
-
-    }
-
-
-    botonCalcularEnvio.disabled =
-      true;
-
-
-    botonCalcularEnvio.textContent =
-      "Calculando...";
-
-
-    try {
-
-      const respuesta =
-        await fetch(
-          "/api/calcular-envio",
-          {
-
-            method:
-              "POST",
-
-            headers: {
-
-              "Content-Type":
-                "application/json"
-
-            },
-
-            body:
-              JSON.stringify({
-
-                direccion,
-
-                barrio,
-
-                ciudad:
-                  "Medellín"
-
-              })
-
-          }
-        );
-
-
-      let resultado;
-
-
-      try {
-
-        resultado =
-          await respuesta.json();
-
-      } catch {
-
-        resultado = {};
-
-      }
-
-
-      if (
-        !respuesta.ok
-      ) {
-
-        envio = 0;
-
-        envioCalculado =
-          false;
-
-
-        pintarResumen();
-
-
-        alert(
-          resultado.mensaje ||
-          "No pudimos calcular el domicilio."
-        );
-
-
-        return;
-
-      }
-
-
-      const valorEnvio =
-        Number(
-          resultado.valorEnvio
-        );
-
-
-      if (
-        !Number.isFinite(
-          valorEnvio
-        ) ||
-        valorEnvio < 0
-      ) {
-
-        throw new Error(
-          "Valor de envío inválido"
-        );
-
-      }
-
-
-      envio =
-        valorEnvio;
-
-
-      envioCalculado =
-        true;
-
-
-      pintarResumen();
-
-
-    } catch (error) {
-
-      console.error(
-        "Error calculando envío:",
-        error
-      );
-
-
+    if (!respuesta.ok) {
       envio = 0;
-
-      envioCalculado =
-        false;
-
-
+      envioCalculado = false;
       pintarResumen();
-
-
-      alert(
-        "No pudimos conectar con el servidor para calcular el domicilio."
-      );
-
+      return;
     }
 
-
-    finally {
-
-      botonCalcularEnvio.disabled =
-        false;
-
-
-      botonCalcularEnvio.textContent =
-        "Calcular envío";
-
+    const valorEnvio = Number(resultado.valorEnvio);
+    if (!Number.isFinite(valorEnvio) || valorEnvio < 0) {
+      throw new Error("Valor de envío inválido");
     }
 
+    envio = valorEnvio;
+    envioCalculado = true;
+    pintarResumen();
+  } catch (error) {
+    if (solicitud !== solicitudEnvioActual) return;
+    console.error("Error calculando envío:", error);
+    envio = 0;
+    envioCalculado = false;
+    pintarResumen();
+  } finally {
+    if (solicitud === solicitudEnvioActual) {
+      botonCalcularEnvio.disabled = false;
+      botonCalcularEnvio.textContent = envioCalculado
+        ? "Envío calculado ✓"
+        : "Calcular envío";
+    }
   }
-);
+}
 
+function programarCalculoEnvio() {
+  solicitudEnvioActual++;
+  clearTimeout(temporizadorEnvio);
+  invalidarEnvio();
 
-/* =========================================================
-   SI CAMBIA DIRECCIÓN O BARRIO
+  const direccion = direccionCliente?.value.trim() || "";
+  const barrio = barrioCliente?.value.trim() || "";
 
-   El domicilio anterior deja de ser válido.
-   ========================================================= */
+  if (!direccion || !barrio) return;
 
-direccionCliente?.addEventListener(
-  "input",
-  () => {
+  // Espera brevemente a que termine de escribir para no consultar por cada tecla.
+  temporizadorEnvio = setTimeout(calcularEnvioAutomatico, 650);
+}
 
-    if (
-      envioCalculado
-    ) {
-
-      invalidarEnvio();
-
-    }
-
-  }
-);
-
-
-barrioCliente?.addEventListener(
-  "input",
-  () => {
-
-    if (
-      envioCalculado
-    ) {
-
-      invalidarEnvio();
-
-    }
-
-  }
-);
+botonCalcularEnvio?.addEventListener("click", calcularEnvioAutomatico);
+direccionCliente?.addEventListener("input", programarCalculoEnvio);
+barrioCliente?.addEventListener("input", programarCalculoEnvio);
+direccionCliente?.addEventListener("blur", calcularEnvioAutomatico);
+barrioCliente?.addEventListener("blur", calcularEnvioAutomatico);
 
 
 /* =========================================================
