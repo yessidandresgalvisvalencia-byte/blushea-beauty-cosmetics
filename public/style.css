@@ -3399,3 +3399,16 @@ body:has(.orders-page) {
 .product-image-link {
   padding-inline: 2%;
 }
+
+
+/* Ajuste visual: tonos más visibles en las tarjetas */
+.mini-tones span {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+.mini-tones {
+  gap: 8px;
+}
