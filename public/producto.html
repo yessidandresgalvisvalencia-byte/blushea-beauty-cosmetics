@@ -699,7 +699,7 @@
 
       const pendiente = producto.proximamente === true;
       const disponible = !pendiente && stock > 0 && precio > 0;
-      const textoBoton = disponible ? "Agregar al carrito" : "Agregar al carrito";
+      const textoBoton = "Agregar al carrito";
 
 
 
@@ -861,7 +861,7 @@
                   id="masCantidad"
                   aria-label="Aumentar cantidad"
                   ${
-                    stock <= 0
+                    !disponible
                       ? "disabled"
                       : ""
                   }
@@ -948,6 +948,8 @@
               ${textoBoton}
 
             </button>
+
+            ${!disponible ? `<p class="detail-cart-message" role="status">Este producto estará disponible para agregar al carrito cuando confirmemos su precio y existencias.</p>` : ""}
 
 
             <div
