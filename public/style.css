@@ -3099,3 +3099,71 @@ button:disabled {
   .checkout-trust { grid-template-columns:1fr; }
   .checkout-trust span { font-size:9px; }
 }
+
+
+/* =========================================================
+   PEDIDOS ADMIN · LUXURY OPERATIONS
+   ========================================================= */
+body:has(.orders-page) {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(244,194,194,.30), transparent 26rem),
+    radial-gradient(circle at 92% 32%, rgba(242,221,211,.38), transparent 28rem),
+    #fffaf8;
+}
+.orders-page {
+  max-width: 1380px;
+  padding: clamp(38px,5vw,72px) clamp(18px,5vw,64px) 90px;
+}
+.orders-page-heading {
+  display:flex; align-items:flex-end; justify-content:space-between; gap:28px;
+  margin-bottom:30px; padding:34px clamp(24px,4vw,46px);
+  border:1px solid rgba(234,223,219,.9); border-radius:32px;
+  background:rgba(255,255,255,.78); box-shadow:var(--shadow-sm);
+  backdrop-filter:blur(18px);
+}
+.orders-eyebrow {display:block;margin-bottom:10px;font-size:10px;font-weight:900;letter-spacing:3.5px;color:var(--accent-dark)}
+.orders-page-heading h2 {font:400 clamp(38px,5vw,62px)/1 Georgia,"Times New Roman",serif;letter-spacing:-1.5px}
+.orders-page-heading p {max-width:650px;margin-top:14px;color:var(--text-soft);line-height:1.7}
+.orders-summary {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:28px}
+.order-summary-card {padding:20px;border:1px solid var(--border-soft);border-radius:20px;background:rgba(255,255,255,.9);box-shadow:var(--shadow-sm)}
+.order-summary-card span {display:block;font-size:10px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-muted)}
+.order-summary-card strong {display:block;margin-top:8px;font:500 30px/1 Georgia,"Times New Roman",serif}
+#mensajePedidos:not(:empty){margin:0 0 18px}
+#listaPedidos {gap:22px}
+.order-card {padding:0;border-radius:28px;box-shadow:0 16px 50px rgba(45,30,35,.07)}
+.order-card:hover {transform:translateY(-2px);box-shadow:0 24px 65px rgba(45,30,35,.11)}
+.order-header {margin:0;padding:24px 28px;background:linear-gradient(135deg,#fff,#fff6f5);border-bottom:1px solid var(--border-soft)}
+.order-id-label {display:block!important;padding:0!important;margin-bottom:5px;background:transparent!important;color:var(--accent-dark)!important;font-size:9px!important;letter-spacing:2.4px!important}
+.order-header h3 {font-size:27px}
+.order-status {padding:9px 14px!important}
+.order-status-pendiente {background:#fff5dc!important;color:#89620b!important}
+.order-status-confirmado {background:#eef4ff!important;color:#315b96!important}
+.order-status-preparando {background:#fff0f4!important;color:#9b4562!important}
+.order-status-enviado {background:#f0efff!important;color:#5d54a2!important}
+.order-status-entregado {background:var(--success-bg)!important;color:var(--success)!important}
+.order-status-cancelado {background:var(--danger-bg)!important;color:var(--danger)!important}
+.order-customer,.order-products-section,.order-management,.order-actions,.order-total {margin-left:28px;margin-right:28px}
+.order-customer {margin-top:24px;padding:22px;border-radius:20px;background:#fcf8f6;border:1px solid var(--border-soft);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 28px}
+.order-customer h4,.order-products-section h4 {grid-column:1/-1;margin-bottom:4px;font:500 18px Georgia,"Times New Roman",serif}
+.order-customer p {color:var(--text-soft);font-size:13px;line-height:1.55}
+.order-customer p strong {color:var(--text)}
+.order-products-section {margin-top:24px}
+.order-product {margin-top:10px;grid-template-columns:86px minmax(0,1fr);padding:14px;background:#fff;border-radius:18px}
+.order-product img,.order-product-placeholder {width:86px;height:86px;border-radius:14px}
+.order-product-placeholder {display:grid;place-items:center;background:linear-gradient(145deg,#f8e9e5,#f1deda);font-size:9px;font-weight:900;letter-spacing:1.5px;color:var(--accent-dark)}
+.order-product-info {display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:18px;align-items:center}
+.order-product-info>strong {grid-column:1/-1;font:500 16px Georgia,"Times New Roman",serif}
+.order-product-info p {margin:2px 0}
+.order-product-tone {grid-column:1/-1}
+.order-total {margin-top:24px;padding:20px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft)}
+.order-total p {padding:13px 16px;border-radius:16px;background:#faf6f4;color:var(--text);display:flex;justify-content:space-between;gap:12px;font-size:12px}
+.order-total .order-grand-total {background:var(--text);color:#fff}
+.order-management {margin-top:22px;padding:20px;border:1px solid var(--border-soft);border-radius:20px;background:#fff}
+.order-management label {display:block;margin-bottom:9px;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+.order-status-select {width:100%;min-height:48px;padding:0 15px;border:1px solid var(--border);border-radius:14px;background:#fff;color:var(--text);font-weight:750;outline:none}
+.order-status-select:focus {border-color:var(--accent);box-shadow:0 0 0 4px rgba(184,111,120,.08)}
+.order-status-help {margin-top:9px;color:var(--text-muted);font-size:11px;line-height:1.5}
+.order-actions {padding:18px 0 28px;display:flex;gap:10px;flex-wrap:wrap}
+.order-actions .secondary-button {min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:11px;font-weight:900}
+@media(max-width:900px){.orders-summary{grid-template-columns:repeat(2,1fr)}.orders-page-heading{align-items:flex-start;flex-direction:column}.order-customer{grid-template-columns:1fr}.order-total{grid-template-columns:1fr}}
+@media(max-width:560px){.orders-page{padding:24px 12px 60px}.orders-page-heading{padding:25px 20px;border-radius:24px}.orders-page-heading h2{font-size:38px}.orders-summary{gap:8px}.order-summary-card{padding:16px}.order-header{padding:20px}.order-customer,.order-products-section,.order-management,.order-actions,.order-total{margin-left:16px;margin-right:16px}.order-product{grid-template-columns:64px minmax(0,1fr)}.order-product img,.order-product-placeholder{width:64px;height:64px}.order-product-info{display:block}.order-actions{flex-direction:column}.order-actions .secondary-button{width:100%}}
