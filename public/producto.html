@@ -1763,9 +1763,25 @@
             carrito
           );
 
+          mensajeCarrito.innerHTML = `
+            <div class="detail-added-confirmation" role="status">
+              <strong>✓ Producto agregado al carrito</strong>
+              <span>
+                ${escaparHTML(producto.nombre)}
+                ${tono ? ` · ${escaparHTML(tono)}` : ""}
+                · ${cantidad} ${cantidad === 1 ? "unidad" : "unidades"}
+              </span>
+              <a href="/carrito.html">Ver carrito</a>
+            </div>
+          `;
 
-          window.location.href =
-            "/carrito.html";
+          botonComprar.textContent = "✓ Agregado";
+          botonComprar.disabled = true;
+
+          setTimeout(() => {
+            botonComprar.textContent = "Agregar otro";
+            botonComprar.disabled = false;
+          }, 2200);
 
         }
       );
