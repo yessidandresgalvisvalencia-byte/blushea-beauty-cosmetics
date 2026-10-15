@@ -792,14 +792,18 @@ app.get(
           error
         );
 
+        /*
+         * El catálogo editorial no depende de Supabase.
+         * Si el proveedor externo tiene una caída temporal,
+         * seguimos mostrando los productos de maquillaje
+         * que todavía están en preparación.
+         */
+
         return res
-          .status(500)
-          .json({
-
-            mensaje:
-              "Error leyendo productos"
-
-          });
+          .status(200)
+          .json(
+            CATALOGO_MAQUILLAJE_PROXIMAMENTE
+          );
 
       }
 
