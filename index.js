@@ -770,7 +770,7 @@ const CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
   precio: [18900, 32900, 21900, 48900, 39900, 29900, 45900, 31900, 25900, 17900][indice],
   stock: 50,
   tieneTonos: producto.tonos.length > 0,
-  variantes: [],
+  variantes: producto.tonos.map((nombre) => ({ nombre, imagen: "" })),
   imagen: "",
   proximamente: false,
   precioPrueba: true,
