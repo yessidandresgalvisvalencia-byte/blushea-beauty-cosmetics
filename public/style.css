@@ -219,10 +219,15 @@ button {
   background: var(--surface-pink);
 }
 
-.cart-link.has-items {
-  background: var(--accent-dark);
+.nav a.is-active {
+  background: var(--text) !important;
   color: #fff !important;
-  box-shadow: 0 8px 20px rgba(141, 56, 85, 0.18);
+  box-shadow: 0 8px 20px rgba(31, 25, 27, 0.12);
+}
+
+.nav a.is-active:hover {
+  background: var(--accent-dark) !important;
+  color: #fff !important;
 }
 
 
