@@ -1,192 +1,212 @@
-{
-  "nota": "Borrador de catálogo. No publicar ni habilitar ventas sin fotografías autorizadas, precios y existencias reales. Los tonos incompletos requieren confirmación.",
-  "productos": [
-    {
-      "id": "catalogo-pendiente-1",
-      "nombre": "Corrector líquido Ruby Rose Feels",
-      "categoria": "Correctores",
-      "descripcion": "Corrector líquido con aplicador incorporado para trabajar zonas puntuales del rostro.",
-      "tonos": [],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-2",
-      "nombre": "Corrector Atenea 1st Scene Concealer",
-      "categoria": "Correctores",
-      "presentacion": "10 ml / 0.33 fl oz",
-      "descripcion": "Corrector de maquillaje para unificar visualmente el tono y trabajar imperfecciones localizadas.",
-      "tonos": [
-        "00 Light",
-        "0.5 Warm Ivory",
-        "01 Natural",
-        "02 Beige",
-        "03 Vanilla",
-        "04 Ivory",
-        "4.5 Olive Beige",
-        "05 Espresso",
-        "5.5 Desert",
-        "06 Orange",
-        "07 Rose",
-        "08 Cocoa",
-        "09 Lila",
-        "10 Yellow",
-        "11 Green",
-        "12 Blue"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-3",
-      "nombre": "Corrector Ani-K",
-      "categoria": "Correctores",
-      "presentacion": "4.3 ml",
-      "descripcion": "Corrector líquido para aplicación localizada y acabado uniforme.",
-      "tonos": [
-        "00 Snow",
-        "01",
-        "02",
-        "03",
-        "04",
-        "05 Golden Brown"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-4",
-      "nombre": "Base líquida Atenea 1st Scene",
-      "categoria": "Bases",
-      "presentacion": "30 ml / 1.01 fl oz",
-      "descripcion": "Base líquida para ayudar a unificar visualmente el tono del rostro.",
-      "tonos": [
-        "Light",
-        "Porcelain",
-        "Cream",
-        "Vainilla",
-        "Almond",
-        "Olive",
-        "Temple",
-        "Sand",
-        "Ebony"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-5",
-      "nombre": "Bloomshell My Foundation 2 en 1",
-      "categoria": "Bases",
-      "descripcion": "Producto de maquillaje que combina funciones de base y corrector.",
-      "tonos": [
-        "1",
-        "2",
-        "2.5",
-        "3",
-        "4",
-        "4.2",
-        "4.5",
-        "4.8",
-        "5",
-        "6",
-        "6.5",
-        "7"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-6",
-      "nombre": "Base Lulia Mate",
-      "categoria": "Bases",
-      "descripcion": "Base de maquillaje de acabado mate.",
-      "tonos": [
-        "01",
-        "02",
-        "03",
-        "04",
-        "05",
-        "06"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-7",
-      "nombre": "MONTOC Humide Healthy Foundation",
-      "categoria": "Bases",
-      "descripcion": "Base de maquillaje en presentación de tubo.",
-      "tonos": [
-        "100",
-        "200",
-        "300",
-        "400",
-        "500"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-8",
-      "nombre": "L.A. Colors Truly Matte",
-      "categoria": "Bases",
-      "descripcion": "Base de maquillaje de acabado mate.",
-      "tonos": [],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-9",
-      "nombre": "Base Vogue",
-      "categoria": "Bases",
-      "descripcion": "Base de maquillaje.",
-      "tonos": [],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    },
-    {
-      "id": "catalogo-pendiente-10",
-      "nombre": "Corrector Dolce Bella",
-      "categoria": "Correctores",
-      "descripcion": "Correctores de color para maquillaje correctivo.",
-      "tonos": [
-        "1 Amarillo",
-        "3 Verde",
-        "8 Naranja"
-      ],
-      "precioCOP": null,
-      "stock": null,
-      "imagenPrincipal": null,
-      "imagenesPorTono": {},
-      "estado": "pendiente_de_imagen_precio_stock"
-    }
-  ]
-}
+[
+  {
+    "id": "makeup-ruby-rose-feels",
+    "nombre": "Corrector Líquido Ruby Rose Feels",
+    "categoria": "Correctores",
+    "descripcion": "Corrector líquido con aplicador incorporado para complementar la rutina y trabajar ojeras, pequeñas imperfecciones o áreas donde quieras unificar visualmente el tono de la piel.",
+    "tonos": [
+      "Caramelo 50",
+      "Amendoa 30",
+      "Castanha 20"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-atenea-concealer",
+    "nombre": "Corrector Atenea 1st Scene Concealer",
+    "categoria": "Correctores",
+    "descripcion": "Corrector líquido para complementar el maquillaje y trabajar zonas específicas del rostro. Ideal para ojeras, pequeñas imperfecciones y una apariencia visualmente más uniforme.",
+    "tonos": [
+      "00 Light",
+      "0.5 Warm Ivory",
+      "01 Natural",
+      "02 Beige",
+      "03 Vanilla",
+      "04 Ivory",
+      "4.5 Olive Beige",
+      "05 Espresso",
+      "5.5 Desert",
+      "06 Orange",
+      "07 Rose",
+      "08 Cocoa",
+      "09 Lila"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-anik-concealer",
+    "nombre": "Corrector de Ojeras Ani-K Makeup",
+    "categoria": "Correctores",
+    "descripcion": "Corrector líquido diseñado para complementar tu maquillaje y ayudarte a conseguir una apariencia más uniforme y definida. Presentación de 4.3 ml.",
+    "tonos": [
+      "00 Snow",
+      "01 Bone",
+      "02 Radiant",
+      "03 Honey",
+      "04 Ginger",
+      "05 Golden Brown"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-atenea-foundation",
+    "nombre": "Base Líquida Atenea 1st Scene – 30 ml",
+    "categoria": "Bases",
+    "descripcion": "Base líquida ideal para unificar visualmente el tono de la piel y crear una apariencia más uniforme. Cuenta con una amplia gama desde tonos claros hasta profundos.",
+    "tonos": [
+      "Light",
+      "Porcelain",
+      "Cream",
+      "Vainilla",
+      "Almond",
+      "Olive",
+      "Temple",
+      "Sand",
+      "Ebony"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-bloomshell-foundation",
+    "nombre": "Base + Corrector Bloomshell My Foundation 2 en 1",
+    "categoria": "Bases",
+    "descripcion": "Combina base y corrector en un solo producto para simplificar la rutina. Ayuda a unificar visualmente el tono de la piel y disimular pequeñas imperfecciones.",
+    "tonos": [
+      "1",
+      "2",
+      "2.5",
+      "3",
+      "4",
+      "4.2",
+      "4.5",
+      "4.8",
+      "5",
+      "6",
+      "6.5",
+      "7"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-lulia-mate",
+    "nombre": "Base Líquida Mate Lulia",
+    "categoria": "Bases",
+    "descripcion": "Base líquida de acabado mate, ideal para unificar visualmente el tono de la piel y crear una apariencia más uniforme.",
+    "tonos": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-montoc-foundation",
+    "nombre": "Base Líquida MONTOC Humide Healthy Foundation",
+    "categoria": "Bases",
+    "descripcion": "Base líquida ideal para unificar visualmente el tono de la piel y lograr una apariencia más uniforme y natural. Presentación en tubo.",
+    "tonos": [
+      "100",
+      "200",
+      "250",
+      "300",
+      "350",
+      "400",
+      "500"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-la-colors-truly-matte",
+    "nombre": "Base Líquida L.A. Colors Truly Matte",
+    "categoria": "Bases",
+    "descripcion": "Base líquida de acabado mate para unificar visualmente el tono de la piel. Su dispensador permite una aplicación práctica y controlada.",
+    "tonos": [
+      "351 Porcelain",
+      "352 Natural",
+      "353 Nude",
+      "354 Soft Beige",
+      "355 Medium Beige",
+      "356 Sand",
+      "357 Golden Beige",
+      "358 Warm Honey",
+      "359 Cool Beige",
+      "360 Café",
+      "361 Deep Tan",
+      "362 Warm Caramel",
+      "363 Cappuccino",
+      "364 Mahogany"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-vogue-foundation",
+    "nombre": "Base Líquida Vogue Resist 12H",
+    "categoria": "Bases",
+    "descripcion": "Base líquida ideal para unificar visualmente el tono de la piel y lograr un maquillaje con apariencia uniforme durante el día.",
+    "tonos": [
+      "Natural",
+      "Trigo",
+      "Gitano",
+      "Arena",
+      "Bronce",
+      "Avellana",
+      "Canela"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  },
+  {
+    "id": "makeup-dolce-bella-concealer",
+    "nombre": "Correctores de Color Dolce Bella Liquid Concealer",
+    "categoria": "Correctores",
+    "descripcion": "Correctores de color para complementar la preparación de la piel antes de la base. Cada referencia ayuda a neutralizar visualmente diferentes tonalidades del rostro. Presentación de 10 ml.",
+    "tonos": [
+      "1 Amarillo",
+      "3 Verde",
+      "8 Naranja"
+    ],
+    "precioCOP": null,
+    "stock": null,
+    "imagenPrincipal": null,
+    "imagenesPorTono": {},
+    "estado": "pendiente_de_precio_stock"
+  }
+]
