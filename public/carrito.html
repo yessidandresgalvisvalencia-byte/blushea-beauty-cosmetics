@@ -21,7 +21,7 @@
 
   <link
     rel="stylesheet"
-    href="style.css"
+    href="style.css?v=20261014-luxury-cart-v1"
   >
 
 </head>
@@ -61,7 +61,7 @@
 
       <a
         href="/carrito.html"
-        class="cart-link"
+        class="cart-link is-active"
         aria-current="page"
       >
         Carrito
@@ -79,6 +79,9 @@
 
   <main class="cart-page">
 
+    <div class="cart-ambient cart-ambient-one" aria-hidden="true"></div>
+    <div class="cart-ambient cart-ambient-two" aria-hidden="true"></div>
+
 
     <!-- ===================================================
          ENCABEZADO
@@ -95,9 +98,15 @@
       </h1>
 
       <p>
-        Revisa tus favoritos y completa los datos
-        para recibir tu pedido.
+        Una experiencia de compra cuidada hasta el último detalle.
+        Revisa tu selección y prepara tu pedido.
       </p>
+
+      <div class="cart-luxury-notes" aria-label="Beneficios de compra">
+        <span>Selección cuidada</span>
+        <span>Entrega en Medellín</span>
+        <span>Compra protegida</span>
+      </div>
 
     </section>
 
@@ -399,7 +408,7 @@
        La lógica permanece separada.
        ===================================================== -->
 
-  <script src="carrito.js"></script>
+  <script src="carrito.js?v=20261014-luxury-cart-v1"></script>
 
 
 </body>
