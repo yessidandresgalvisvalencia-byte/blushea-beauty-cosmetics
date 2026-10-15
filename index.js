@@ -1595,7 +1595,7 @@ async function geocodificarEnvio(consulta) {
         "User-Agent": "BlusheaBeautyShipping/1.0",
         "Accept-Language": "es-CO,es"
       },
-      signal: AbortSignal.timeout(8000)
+      signal: AbortSignal.timeout(4500)
     }
   );
   if (!respuesta.ok) return null;
@@ -1619,7 +1619,7 @@ async function distanciaConduccionKm(origen, destino) {
   const ruta = origen.lon + "," + origen.lat + ";" + destino.lon + "," + destino.lat;
   const respuesta = await fetch(
     "https://router.project-osrm.org/route/v1/driving/" + ruta + "?overview=false",
-    { signal: AbortSignal.timeout(8000) }
+    { signal: AbortSignal.timeout(4500) }
   );
   if (!respuesta.ok) return null;
   const datos = await respuesta.json();
@@ -1638,26 +1638,30 @@ app.post("/api/calcular-envio", async (req, res) => {
       });
     }
 
-    const origen = await geocodificarEnvio(ORIGEN_ENVIO);
+    // El origen es fijo; evitamos geocodificarlo en cada cálculo.
+    // Coordenadas aproximadas de Buenos Aires, Medellín.
+    const origen = { lat: 6.2357, lon: -75.5526 };
 
-    // Nominatim no siempre reconoce los barrios de Medellín cuando el barrio
-    // se concatena a una dirección válida. Probamos de más específico a más
-    // tolerante y usamos el barrio como dato de entrega, no como bloqueo.
+    // Primero buscamos solo la dirección: los nombres de barrio suelen hacer
+    // fallar o ralentizar Nominatim. El barrio se conserva para la entrega.
     const consultasDestino = [
-      direccion + ", " + barrio + ", Medellín, Antioquia, Colombia",
       direccion + ", Medellín, Antioquia, Colombia",
-      direccion + ", Medellín, Colombia"
+      direccion + ", " + barrio + ", Medellín, Colombia"
     ];
 
     let destino = null;
     for (const consulta of consultasDestino) {
-      destino = await geocodificarEnvio(consulta);
+      try {
+        destino = await geocodificarEnvio(consulta);
+      } catch (error) {
+        console.warn("Geocodificación fallida:", consulta, error.message);
+      }
       if (destino) break;
     }
 
-    if (!origen || !destino) {
+    if (!destino) {
       return res.status(422).json({
-        mensaje: "No pudimos ubicar esa dirección en Medellín. Revisa únicamente la dirección e intenta de nuevo."
+        mensaje: "No pudimos ubicar esa dirección en Medellín. Revisa la nomenclatura e intenta de nuevo."
       });
     }
 
