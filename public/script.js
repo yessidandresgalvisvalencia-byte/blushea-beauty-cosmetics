@@ -748,11 +748,33 @@ function activarAgregarCarritoTarjeta(tarjeta, producto, variantes) {
     localStorage.setItem("carritoBlushea", JSON.stringify(carrito));
     actualizarContadorCarrito();
 
-    const textoAnterior = boton.textContent;
-    boton.textContent = "Agregado ✓";
+    boton.textContent = "✓ Producto agregado";
+    boton.classList.add("is-added");
+    boton.disabled = true;
+    boton.setAttribute("aria-disabled", "true");
+
+    let confirmacion = tarjeta.querySelector("[data-cart-confirmation]");
+    if (!confirmacion) {
+      confirmacion = document.createElement("div");
+      confirmacion.dataset.cartConfirmation = "true";
+      confirmacion.className = "cart-add-confirmation";
+      confirmacion.setAttribute("role", "status");
+      confirmacion.setAttribute("aria-live", "polite");
+      tarjeta.querySelector(".product-actions")?.insertAdjacentElement("afterend", confirmacion);
+    }
+
+    confirmacion.innerHTML = `
+      <strong>✓ Agregado al carrito</strong>
+      <span>${escaparHTML(producto.nombre)}${tono ? ` · ${escaparHTML(tono)}` : ""}</span>
+      <a href="/carrito.html">Ver carrito</a>
+    `;
+
     setTimeout(() => {
-      boton.textContent = textoAnterior;
-    }, 1200);
+      boton.textContent = "Agregar otro";
+      boton.classList.remove("is-added");
+      boton.disabled = false;
+      boton.removeAttribute("aria-disabled");
+    }, 2200);
   });
 }
 
