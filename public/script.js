@@ -1102,34 +1102,32 @@ function obtenerZonaProducto(producto) {
   const categoria = normalizarTextoCategoria(producto?.categoria);
   const nombre = normalizarTextoCategoria(producto?.nombre);
   const descripcion = normalizarTextoCategoria(producto?.descripcion);
+  const identidad = categoria + " " + nombre;
   const texto = [categoria, nombre, descripcion].join(" ");
 
-  // Herramientas de aplicación tienen prioridad: una brocha nunca debe
-  // clasificarse como Ojos solo porque su descripción diga "para ojos".
-  if (/brocha|pincel|beauty blender|beautyblender|esponja.*maquill|esponja.*cosmetic|aplicador.*maquill/.test(categoria + " " + nombre)) {
+  // Herramientas de aplicación tienen prioridad.
+  if (/brocha|pincel|beauty blender|beautyblender|esponja.*maquill|esponja.*cosmetic|aplicador.*maquill/.test(identidad)) {
     return "Brochas";
   }
 
-  if (/cosmetiquera|washbag|estuche|organizador/.test(categoria + " " + nombre)) {
+  if (/cosmetiquera|washbag|estuche|organizador/.test(identidad)) {
     return "Accesorios";
   }
 
-  // OJOS · productos cuyo uso principal es maquillaje/definición de ojos.
-  if (/sombra|paleta.*ojo|pestana|pestañ|delineador|eyeliner|mascara.*pest|rimel|rímel|ceja|brow|lapiz.*ojo|lápiz.*ojo/.test(categoria + " " + nombre)) {
-    return "Ojos";
-  }
-
-  // LABIOS · color, brillo, perfilado y cuidado específicamente labial.
-  if (/labial|labios|lipstick|lip gloss|lipgloss|gloss.*lab|balsamo.*lab|bálsamo.*lab|tinta.*lab|perfilador.*lab|delineador.*lab|lip liner|aceite.*lab|lip oil/.test(texto)) {
+  // Labios va antes que Ojos para evitar que "delineador de labios"
+  // termine clasificado como delineador de ojos.
+  if (/labial|labios|lipstick|lip gloss|lipgloss|gloss.*lab|balsamo.*lab|bálsamo.*lab|tinta.*lab|perfilador.*lab|delineador.*lab|lip liner|aceite.*lab|lip oil/.test(identidad)) {
     return "Labios";
   }
 
-  // SKINCARE · cuidado facial, no maquillaje de cobertura/color.
+  if (/sombra|paleta.*ojo|pigmento.*ojo|glitter.*ojo|prebase.*ojo|pestana|pestañ|delineador|eyeliner|mascara.*pest|rimel|rímel|ceja|brow|lapiz.*ojo|lápiz.*ojo/.test(identidad)) {
+    return "Ojos";
+  }
+
   if (/skincare|serum|sérum|suero facial|crema facial|hidratante facial|limpiador facial|agua micelar|desmaquillante|tonico facial|tónico facial|protector solar|bloqueador facial|mascarilla facial|exfoliante facial|contorno de ojos|esencia facial/.test(texto)) {
     return "Skincare";
   }
 
-  // ROSTRO · maquillaje de tez/cobertura/color.
   if (/\bbase\b|foundation|corrector|concealer|polvo|contorno|bronzer|rubor|blush|iluminador|highlighter|tinta liquida|tinta líquida|primer.*maquill|fijador.*maquill/.test(texto)) {
     return "Rostro";
   }
