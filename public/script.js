@@ -159,10 +159,6 @@ function actualizarContadorCarrito() {
     contadorCarrito.hidden =
       cantidad <= 0;
 
-    const enlaceCarrito = contadorCarrito.closest(".cart-link");
-    if (enlaceCarrito) {
-      enlaceCarrito.classList.toggle("has-items", cantidad > 0);
-    }
 
   } catch (error) {
     console.error(
@@ -172,13 +168,54 @@ function actualizarContadorCarrito() {
 
     contadorCarrito.textContent = "0";
     contadorCarrito.hidden = true;
-    const enlaceCarrito = contadorCarrito.closest(".cart-link");
-    if (enlaceCarrito) {
-      enlaceCarrito.classList.remove("has-items");
-    }
   }
 }
 
+
+
+/* =========================================================
+   NAVEGACIÓN ACTIVA SEGÚN LA SECCIÓN VISIBLE
+   ========================================================= */
+
+function activarNavegacionPorSeccion() {
+  const enlaces = Array.from(document.querySelectorAll(".nav [data-nav-section]"));
+  const secciones = ["inicio", "productos", "contacto"]
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+
+  const marcar = id => {
+    enlaces.forEach(enlace => {
+      enlace.classList.toggle("is-active", enlace.dataset.navSection === id);
+    });
+  };
+
+  const desdeHash = () => {
+    const id = window.location.hash.replace("#", "");
+    marcar(["productos", "contacto"].includes(id) ? id : "inicio");
+  };
+
+  enlaces.forEach(enlace => {
+    if (enlace.dataset.navSection !== "carrito") {
+      enlace.addEventListener("click", () => marcar(enlace.dataset.navSection));
+    }
+  });
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(entradas => {
+      const visibles = entradas
+        .filter(entrada => entrada.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visibles[0]) marcar(visibles[0].target.id);
+    }, { rootMargin: "-25% 0px -55% 0px", threshold: [0.01, 0.25, 0.5] });
+
+    secciones.forEach(seccion => observer.observe(seccion));
+  }
+
+  window.addEventListener("hashchange", desdeHash);
+  desdeHash();
+}
+
+activarNavegacionPorSeccion();
 
 /* =========================================================
    CARGAR PRODUCTOS
