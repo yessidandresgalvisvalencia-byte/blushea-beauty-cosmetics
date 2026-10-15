@@ -731,6 +731,35 @@ function mapearProducto(
 
 
 /* =========================================================
+   CATÁLOGO MAQUILLAJE · PRÓXIMAMENTE
+
+   Se muestra nombre, descripción y tonos confirmados.
+   Sin precio, stock ni imagen hasta completar la ficha.
+   ========================================================= */
+
+const CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
+  {id:"makeup-ruby-rose-feels",nombre:"Corrector líquido Ruby Rose Feels",categoria:"Correctores",descripcion:"Corrector líquido con aplicador incorporado para trabajar zonas puntuales del rostro.",tonos:[]},
+  {id:"makeup-atenea-concealer",nombre:"Corrector Atenea 1st Scene Concealer",categoria:"Correctores",descripcion:"Corrector de maquillaje para unificar visualmente el tono y trabajar imperfecciones localizadas.",tonos:["00 Light","0.5 Warm Ivory","01 Natural","02 Beige","03 Vanilla","04 Ivory","4.5 Olive Beige","05 Espresso","5.5 Desert","06 Orange","07 Rose","08 Cocoa","09 Lila","10 Yellow","11 Green","12 Blue"]},
+  {id:"makeup-anik-concealer",nombre:"Corrector Ani-K",categoria:"Correctores",descripcion:"Corrector líquido para aplicación localizada y acabado uniforme.",tonos:["00 Snow","01","02","03","04","05 Golden Brown"]},
+  {id:"makeup-atenea-foundation",nombre:"Base líquida Atenea 1st Scene",categoria:"Bases",descripcion:"Base líquida para ayudar a unificar visualmente el tono del rostro.",tonos:["Light","Porcelain","Cream","Vainilla","Almond","Olive","Temple","Sand","Ebony"]},
+  {id:"makeup-bloomshell-foundation",nombre:"Bloomshell My Foundation 2 en 1",categoria:"Bases",descripcion:"Producto de maquillaje que combina funciones de base y corrector.",tonos:["1","2","2.5","3","4","4.2","4.5","4.8","5","6","6.5","7"]},
+  {id:"makeup-lulia-mate",nombre:"Base Lulia Mate",categoria:"Bases",descripcion:"Base de maquillaje de acabado mate.",tonos:["01","02","03","04","05","06"]},
+  {id:"makeup-montoc-foundation",nombre:"MONTOC Humide Healthy Foundation",categoria:"Bases",descripcion:"Base de maquillaje en presentación de tubo.",tonos:["100","200","300","400","500"]},
+  {id:"makeup-la-colors-truly-matte",nombre:"L.A. Colors Truly Matte",categoria:"Bases",descripcion:"Base de maquillaje de acabado mate.",tonos:[]},
+  {id:"makeup-vogue-foundation",nombre:"Base Vogue",categoria:"Bases",descripcion:"Base de maquillaje.",tonos:[]},
+  {id:"makeup-dolce-bella-concealer",nombre:"Corrector Dolce Bella",categoria:"Correctores",descripcion:"Correctores de color para maquillaje correctivo.",tonos:["1 Amarillo","3 Verde","8 Naranja"]}
+].map(producto => ({
+  ...producto,
+  precio: null,
+  stock: 0,
+  tieneTonos: producto.tonos.length > 0,
+  variantes: [],
+  imagen: "",
+  proximamente: true
+}));
+
+
+/* =========================================================
    API - OBTENER PRODUCTOS DESDE SUPABASE
    ========================================================= */
 
@@ -783,7 +812,7 @@ app.get(
 
 
       res.json(
-        productos
+        productos.concat(CATALOGO_MAQUILLAJE_PROXIMAMENTE)
       );
 
 
