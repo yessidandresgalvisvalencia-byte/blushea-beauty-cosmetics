@@ -1,1 +1,21 @@
-export default function Cuenta(){return <main className="account"><span className="eyebrow">MI GLAMOUR</span><h1>Tu espacio de belleza.</h1><div className="account-grid"><article><h2>Glam Points</h2><strong>1.280</strong><p>Estás a 720 puntos de tu próxima recompensa.</p><div className="progress"><i/></div></article><article><h2>Último pedido</h2><b>#GS-10482 · Enviado</b><p>3 productos · $348.700</p><button>SEGUIR PEDIDO</button></article><article><h2>Mis favoritos</h2><p>Guarda aquí todo lo que quieres volver a mirar.</p><button>VER WISHLIST</button></article><article><h2>Direcciones</h2><p>Administra tus direcciones de entrega.</p><button>GESTIONAR</button></article></div></main>}
+import Link from "next/link";
+
+export default function CuentaPage(){
+  return <main className="section account-page">
+    <div className="section-head">
+      <div>
+        <span className="eyebrow">MI GLAMOUR</span>
+        <h1>Tu cuenta</h1>
+        <p className="muted">Inicia sesión para consultar tus pedidos, direcciones, devoluciones y Glam Points.</p>
+      </div>
+    </div>
+    <section className="panel">
+      <h2>Acceso seguro</h2>
+      <p className="muted">Tus datos personales solo aparecerán después de autenticarte. No mostramos pedidos, puntos ni direcciones de ejemplo como si fueran información real.</p>
+      <div className="account-actions">
+        <Link className="btn primary" href="/api/auth/signin">Iniciar sesión</Link>
+        <Link className="btn ghost" href="/contacto">Necesito ayuda</Link>
+      </div>
+    </section>
+  </main>;
+}
