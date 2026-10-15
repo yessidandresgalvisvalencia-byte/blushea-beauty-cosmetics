@@ -748,7 +748,7 @@ const CATALOGO_IMAGENES_MANIFEST = require("./data/catalogo-imagenes-manifest.js
 function prepararImagenesCatalogo(producto) {
   const archivos = CATALOGO_IMAGENES_MANIFEST[producto.id] || [];
   const imagenes = archivos.map((archivo) => `/catalogo/${archivo}`);
-  return { ...producto, imagenes, imagen: imagenes[0] || producto.imagen || "" };
+  return { ...producto, imagenes, imagen: producto.imagen || "" };
 }
 
 const CATALOGO_ACCESORIOS_DOCUMENTO = CATALOGO_ACCESORIOS_DOCUMENTO_BASE.map(prepararImagenesCatalogo);
