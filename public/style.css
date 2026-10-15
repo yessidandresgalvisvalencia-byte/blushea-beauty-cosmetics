@@ -990,6 +990,37 @@ button {
 }
 
 
+/* Catálogo: tercera acción siempre visible, también en tabletas. */
+.product-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+.product-actions > [data-add-cart] {
+  grid-column: 1 / -1;
+  width: 100%;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  border: 0;
+}
+.product-actions > [data-add-cart]:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+  background: #8d737e;
+}
+.product-image-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  text-align: center;
+  padding: 20px;
+}
+@media (min-width: 1100px) {
+  .product-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .product-actions > [data-add-cart] { grid-column: auto; }
+}
+
 /* =========================================================
    EMPTY STATE
    ========================================================= */
