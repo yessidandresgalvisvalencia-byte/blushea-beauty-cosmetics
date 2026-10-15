@@ -1719,7 +1719,7 @@ function normalizarCliente(
 
 app.post(
   "/api/pedidos",
-  (req, res) => {
+  async (req, res) => {
 
     try {
 
@@ -1833,13 +1833,39 @@ app.post(
         );
 
 
+      // El domicilio nunca se confía al navegador: se recalcula en servidor
+      // usando el mismo origen y la misma tarifa vigentes.
+      const origenPedido = await geocodificarEnvio(ORIGEN_ENVIO);
+      const destinoPedido = await geocodificarEnvio(
+        cliente.direccion + ", " + cliente.barrio + ", Medellín, Antioquia, Colombia"
+      );
+
+      if (!origenPedido || !destinoPedido) {
+        return res.status(422).json({
+          mensaje: "No pudimos validar el domicilio del pedido. Revisa la dirección y el barrio."
+        });
+      }
+
+      const distanciaPedidoKm = await distanciaConduccionKm(origenPedido, destinoPedido);
+
+      if (!Number.isFinite(distanciaPedidoKm) || distanciaPedidoKm < 0) {
+        return res.status(503).json({
+          mensaje: "No pudimos validar la ruta del domicilio en este momento."
+        });
+      }
+
+      const distanciaCobradaPedidoKm = Math.max(1, Math.ceil(distanciaPedidoKm));
+      const envioServidor = distanciaCobradaPedidoKm * PRECIO_KM;
+
       if (
         !Number.isFinite(subtotal) ||
         !Number.isFinite(envio) ||
         !Number.isFinite(total) ||
         subtotal < 0 ||
         envio < 0 ||
-        total <= 0
+        total <= 0 ||
+        envio !== envioServidor ||
+        Math.abs(total - (subtotal + envioServidor)) > 0.01
       ) {
 
         return res
@@ -1875,9 +1901,13 @@ app.post(
 
         subtotal,
 
-        envio,
+        envio: envioServidor,
 
-        total,
+        total: subtotal + envioServidor,
+
+        distanciaEnvioKm: Number(distanciaPedidoKm.toFixed(2)),
+        distanciaCobradaEnvioKm: distanciaCobradaPedidoKm,
+        precioKmEnvio: PRECIO_KM,
 
         estado:
           "Pendiente"
