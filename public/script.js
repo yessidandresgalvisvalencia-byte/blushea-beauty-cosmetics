@@ -1099,14 +1099,23 @@ function normalizarTextoCategoria(valor) {
 }
 
 function obtenerZonaProducto(producto) {
-  const texto = normalizarTextoCategoria([
-    producto?.categoria,
-    producto?.nombre,
-    producto?.descripcion
-  ].join(" "));
+  const categoria = normalizarTextoCategoria(producto?.categoria);
+  const nombre = normalizarTextoCategoria(producto?.nombre);
+  const descripcion = normalizarTextoCategoria(producto?.descripcion);
+  const texto = [categoria, nombre, descripcion].join(" ");
 
-  // OJOS · maquillaje, definición, pestañas y cejas.
-  if (/sombra|paleta.*ojo|pestana|pestañ|delineador|eyeliner|mascara.*pest|rimel|rímel|ceja|brow|lapiz.*ojo|lápiz.*ojo/.test(texto)) {
+  // Herramientas de aplicación tienen prioridad: una brocha nunca debe
+  // clasificarse como Ojos solo porque su descripción diga "para ojos".
+  if (/brocha|pincel|beauty blender|beautyblender|esponja.*maquill|esponja.*cosmetic|aplicador.*maquill/.test(categoria + " " + nombre)) {
+    return "Brochas";
+  }
+
+  if (/cosmetiquera|washbag|estuche|organizador/.test(categoria + " " + nombre)) {
+    return "Accesorios";
+  }
+
+  // OJOS · productos cuyo uso principal es maquillaje/definición de ojos.
+  if (/sombra|paleta.*ojo|pestana|pestañ|delineador|eyeliner|mascara.*pest|rimel|rímel|ceja|brow|lapiz.*ojo|lápiz.*ojo/.test(categoria + " " + nombre)) {
     return "Ojos";
   }
 
@@ -1116,13 +1125,8 @@ function obtenerZonaProducto(producto) {
   }
 
   // SKINCARE · cuidado facial, no maquillaje de cobertura/color.
-  if (/skincare|serum|sérum|suero facial|crema facial|hidratante facial|limpiador facial|agua micelar|desmaquillante|tonico facial|tónico facial|protector solar|bloqueador facial|mascarilla facial|exfoliante facial|contorno de ojos|esencia facial|primer skincare/.test(texto)) {
+  if (/skincare|serum|sérum|suero facial|crema facial|hidratante facial|limpiador facial|agua micelar|desmaquillante|tonico facial|tónico facial|protector solar|bloqueador facial|mascarilla facial|exfoliante facial|contorno de ojos|esencia facial/.test(texto)) {
     return "Skincare";
-  }
-
-  // BROCHAS · incluye herramientas de aplicación como Beauty Blender/esponjas.
-  if (/brocha|pincel|beauty blender|beautyblender|esponja.*maquill|esponja.*cosmetic|aplicador.*maquill/.test(texto)) {
-    return "Brochas";
   }
 
   // ROSTRO · maquillaje de tez/cobertura/color.
@@ -1130,18 +1134,8 @@ function obtenerZonaProducto(producto) {
     return "Rostro";
   }
 
-  // ACCESORIOS · organización y herramientas que no son brochas/esponjas.
-  if (/cosmetiquera|washbag|estuche|organizador/.test(texto)) {
-    return "Accesorios";
-  }
-
-  if (/corporal|cuerpo|body/.test(texto)) {
-    return "Corporal";
-  }
-
-  if (/capilar|cabello|hair/.test(texto)) {
-    return "Capilar";
-  }
+  if (/corporal|cuerpo|body/.test(texto)) return "Corporal";
+  if (/capilar|cabello|hair/.test(texto)) return "Capilar";
 
   return "Otros";
 }
