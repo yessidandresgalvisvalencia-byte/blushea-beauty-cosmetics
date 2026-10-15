@@ -835,15 +835,15 @@ app.get(
         error
       );
 
-
-      res
-        .status(500)
-        .json({
-
-          mensaje:
-            "Error leyendo productos"
-
-        });
+      /*
+       * También protegemos el catálogo frente a errores de red
+       * lanzados antes de que Supabase pueda devolver { error }.
+       */
+      return res
+        .status(200)
+        .json(
+          CATALOGO_MAQUILLAJE_PROXIMAMENTE
+        );
 
     }
 
