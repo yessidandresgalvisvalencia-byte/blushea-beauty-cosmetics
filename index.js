@@ -771,18 +771,21 @@ const CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
   {id:"makeup-la-colors-truly-matte",nombre:"Base Líquida L.A. Colors Truly Matte",categoria:"Bases",descripcion:"Base líquida de acabado mate para unificar visualmente el tono de la piel. Su dispensador permite una aplicación práctica y controlada.",tonos:["351 Porcelain","352 Natural","353 Nude","354 Soft Beige","355 Medium Beige","356 Sand","357 Golden Beige","358 Warm Honey","359 Cool Beige","360 Café","361 Deep Tan","362 Warm Caramel","363 Cappuccino","364 Mahogany"]},
   {id:"makeup-vogue-foundation",nombre:"Base Líquida Vogue Resist 12H",categoria:"Bases",descripcion:"Base líquida ideal para unificar visualmente el tono de la piel y lograr un maquillaje con apariencia uniforme durante el día.",tonos:["Natural","Trigo","Gitano","Arena","Bronce","Avellana","Canela"]},
   {id:"makeup-dolce-bella-concealer",nombre:"Correctores de Color Dolce Bella Liquid Concealer",categoria:"Correctores",descripcion:"Correctores de color para complementar la preparación de la piel antes de la base. Cada referencia ayuda a neutralizar visualmente diferentes tonalidades del rostro. Presentación de 10 ml.",tonos:["1 Amarillo","3 Verde","8 Naranja"]}
-].map((producto, indice) => prepararImagenesCatalogo({
-  ...producto,
-  // Valores solo para probar la experiencia de compra; NO son precios de venta.
-  precio: [18900, 32900, 21900, 48900, 39900, 29900, 45900, 31900, 25900, 17900][indice],
-  stock: 50,
-  tieneTonos: producto.tonos.length > 0,
-  variantes: producto.tonos.map((nombre) => ({ nombre, imagen: "" })),
-  imagen: "",
-  proximamente: false,
-  precioPrueba: true,
-  soloDemostracion: true
-}));
+].map((producto, indice) => {
+  const rubyRoseReal = producto.id === "makeup-ruby-rose-feels";
+  return prepararImagenesCatalogo({
+    ...producto,
+    // Ruby Rose Feels ya tiene precio real. Los demás continúan con precio de prueba.
+    precio: rubyRoseReal ? 20000 : [18900, 32900, 21900, 48900, 39900, 29900, 45900, 31900, 25900, 17900][indice],
+    stock: 50,
+    tieneTonos: producto.tonos.length > 0,
+    variantes: producto.tonos.map((nombre) => ({ nombre, imagen: "" })),
+    imagen: "",
+    proximamente: false,
+    precioPrueba: !rubyRoseReal,
+    soloDemostracion: !rubyRoseReal
+  });
+});
 
 
 /* =========================================================
@@ -1859,7 +1862,7 @@ app.post(
 
 
       if (req.body.productos.some(producto =>
-        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => String(demo.id) === String(producto.id))
+        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => demo.soloDemostracion && String(demo.id) === String(producto.id))
       )) {
         return res.status(409).json({
           mensaje: "Estos productos tienen precios de prueba. Puedes probar el carrito, pero no finalizar un pedido real."
@@ -2477,7 +2480,7 @@ app.post(
 
 
       if (pedido.productos.some(producto =>
-        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => String(demo.id) === String(producto.id))
+        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => demo.soloDemostracion && String(demo.id) === String(producto.id))
       )) {
         return res.status(409).json({
           mensaje: "Pago deshabilitado para productos con precios de prueba."
