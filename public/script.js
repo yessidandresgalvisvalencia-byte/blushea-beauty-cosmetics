@@ -383,6 +383,27 @@ function pintarProductos(productos) {
 
   productos.forEach(producto => {
 
+    if (producto.proximamente === true) {
+      const tarjeta = document.createElement("article");
+      tarjeta.className = "product-card makeup-coming-soon";
+      const tonos = Array.isArray(producto.tonos) ? producto.tonos.filter(tono => typeof tono === "string") : [];
+      tarjeta.innerHTML = `
+        <div class="product-image">
+          <div class="product-image-placeholder"><span>FOTO PRÓXIMAMENTE</span></div>
+          <span class="product-sold-out">PRÓXIMAMENTE</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">${escaparHTML(producto.categoria)}</span>
+          <h3>${escaparHTML(producto.nombre)}</h3>
+          <p class="product-description">${escaparHTML(producto.descripcion)}</p>
+          ${tonos.length ? `<div class="catalog-variants"><span>Tonos:</span><p class="product-description">${tonos.map(escaparHTML).join(" · ")}</p></div>` : ""}
+          <div class="product-meta"><strong>Precio por confirmar</strong><small class="stock-out">Aún no disponible para comprar</small></div>
+        </div>
+      `;
+      contenedorProductos.appendChild(tarjeta);
+      return;
+    }
+
     const variantes =
       obtenerVariantes(producto);
 
