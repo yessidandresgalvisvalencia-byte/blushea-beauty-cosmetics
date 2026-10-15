@@ -1,8 +1,177 @@
 generator client { provider = "prisma-client-js" }
 datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
 enum Role { CLIENTE ADMIN SUPER_ADMIN }
 enum OrderStatus { PENDING PAID SHIPPED DELIVERED CANCELLED REFUNDED }
-model User { id String @id @default(cuid()) email String @unique name String? role Role @default(CLIENTE) createdAt DateTime @default(now()) orders Order[] }
-model Product { id String @id @default(cuid()) slug String @unique name String brand String description String price Decimal @db.Decimal(12,2) stock Int @default(0) active Boolean @default(true) createdAt DateTime @default(now()) }
-model Order { id String @id @default(cuid()) userId String status OrderStatus @default(PENDING) total Decimal @db.Decimal(12,2) createdAt DateTime @default(now()) user User @relation(fields:[userId],references:[id]) }
-model AuditLog { id String @id @default(cuid()) actorId String? action String entity String entityId String? ipHash String? createdAt DateTime @default(now()) }
+enum PaymentStatus { PENDING AUTHORIZED PAID FAILED REFUNDED }
+enum Undertone { COOL NEUTRAL WARM }
+enum ProductFinish { MATTE SATIN GLOW GLOSSY }
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String?
+  role Role @default(CLIENTE)
+  twoFactorEnabled Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders Order[]
+  addresses Address[]
+  reviews Review[]
+  wishlist WishlistItem[]
+  glamPoints Int @default(0)
+}
+
+model Address {
+  id String @id @default(cuid())
+  userId String
+  label String @default("Principal")
+  recipient String
+  phone String
+  line1 String
+  line2 String?
+  city String
+  region String
+  postalCode String?
+  country String @default("CO")
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  @@index([userId])
+}
+
+model Brand {
+  id String @id @default(cuid())
+  slug String @unique
+  name String @unique
+  products Product[]
+}
+
+model Category {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  products ProductCategory[]
+}
+
+model Product {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  brandId String
+  description String
+  price Decimal @db.Decimal(12,2)
+  active Boolean @default(true)
+  vegan Boolean @default(false)
+  crueltyFree Boolean @default(false)
+  finish ProductFinish?
+  brand Brand @relation(fields:[brandId],references:[id])
+  variants ProductVariant[]
+  categories ProductCategory[]
+  reviews Review[]
+  wishlist WishlistItem[]
+  orderItems OrderItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([brandId,active])
+}
+
+model ProductVariant {
+  id String @id @default(cuid())
+  productId String
+  sku String @unique
+  name String
+  hex String?
+  skinTone String?
+  undertone Undertone?
+  stock Int @default(0)
+  product Product @relation(fields:[productId],references:[id],onDelete:Cascade)
+  @@index([productId,stock])
+}
+
+model ProductCategory {
+  productId String
+  categoryId String
+  product Product @relation(fields:[productId],references:[id],onDelete:Cascade)
+  category Category @relation(fields:[categoryId],references:[id],onDelete:Cascade)
+  @@id([productId,categoryId])
+}
+
+model Order {
+  id String @id @default(cuid())
+  userId String
+  status OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentProvider String?
+  paymentReference String? @unique
+  subtotal Decimal @db.Decimal(12,2)
+  shipping Decimal @db.Decimal(12,2)
+  discount Decimal @db.Decimal(12,2) @default(0)
+  total Decimal @db.Decimal(12,2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields:[userId],references:[id])
+  items OrderItem[]
+  @@index([userId,createdAt])
+}
+
+model OrderItem {
+  id String @id @default(cuid())
+  orderId String
+  productId String
+  variantId String?
+  nameSnapshot String
+  unitPrice Decimal @db.Decimal(12,2)
+  quantity Int
+  order Order @relation(fields:[orderId],references:[id],onDelete:Cascade)
+  product Product @relation(fields:[productId],references:[id])
+  @@index([orderId])
+}
+
+model Review {
+  id String @id @default(cuid())
+  userId String
+  productId String
+  rating Int
+  title String?
+  body String
+  verified Boolean @default(false)
+  approved Boolean @default(false)
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  product Product @relation(fields:[productId],references:[id],onDelete:Cascade)
+  @@unique([userId,productId])
+  @@index([productId,approved])
+}
+
+model WishlistItem {
+  userId String
+  productId String
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  product Product @relation(fields:[productId],references:[id],onDelete:Cascade)
+  @@id([userId,productId])
+}
+
+model Coupon {
+  id String @id @default(cuid())
+  code String @unique
+  percentOff Int?
+  amountOff Decimal? @db.Decimal(12,2)
+  active Boolean @default(true)
+  startsAt DateTime?
+  endsAt DateTime?
+  maxUses Int?
+  uses Int @default(0)
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  action String
+  entity String
+  entityId String?
+  ipHash String?
+  metadata Json?
+  createdAt DateTime @default(now())
+  @@index([entity,entityId])
+  @@index([createdAt])
+}
