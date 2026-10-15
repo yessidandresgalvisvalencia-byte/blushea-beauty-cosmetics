@@ -1638,13 +1638,26 @@ app.post("/api/calcular-envio", async (req, res) => {
       });
     }
 
-    const destinoTexto = direccion + ", " + barrio + ", Medellín, Antioquia, Colombia";
     const origen = await geocodificarEnvio(ORIGEN_ENVIO);
-    const destino = await geocodificarEnvio(destinoTexto);
+
+    // Nominatim no siempre reconoce los barrios de Medellín cuando el barrio
+    // se concatena a una dirección válida. Probamos de más específico a más
+    // tolerante y usamos el barrio como dato de entrega, no como bloqueo.
+    const consultasDestino = [
+      direccion + ", " + barrio + ", Medellín, Antioquia, Colombia",
+      direccion + ", Medellín, Antioquia, Colombia",
+      direccion + ", Medellín, Colombia"
+    ];
+
+    let destino = null;
+    for (const consulta of consultasDestino) {
+      destino = await geocodificarEnvio(consulta);
+      if (destino) break;
+    }
 
     if (!origen || !destino) {
       return res.status(422).json({
-        mensaje: "No pudimos ubicar esa dirección. Revisa la dirección y el barrio."
+        mensaje: "No pudimos ubicar esa dirección en Medellín. Revisa únicamente la dirección e intenta de nuevo."
       });
     }
 
@@ -1884,13 +1897,21 @@ app.post(
       // El domicilio nunca se confía al navegador: se recalcula en servidor
       // usando el mismo origen y la misma tarifa vigentes.
       const origenPedido = await geocodificarEnvio(ORIGEN_ENVIO);
-      const destinoPedido = await geocodificarEnvio(
-        cliente.direccion + ", " + cliente.barrio + ", Medellín, Antioquia, Colombia"
-      );
+      const consultasDestinoPedido = [
+        cliente.direccion + ", " + cliente.barrio + ", Medellín, Antioquia, Colombia",
+        cliente.direccion + ", Medellín, Antioquia, Colombia",
+        cliente.direccion + ", Medellín, Colombia"
+      ];
+
+      let destinoPedido = null;
+      for (const consulta of consultasDestinoPedido) {
+        destinoPedido = await geocodificarEnvio(consulta);
+        if (destinoPedido) break;
+      }
 
       if (!origenPedido || !destinoPedido) {
         return res.status(422).json({
-          mensaje: "No pudimos validar el domicilio del pedido. Revisa la dirección y el barrio."
+          mensaje: "No pudimos validar la dirección de entrega en Medellín. Revisa únicamente la dirección."
         });
       }
 
