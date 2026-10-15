@@ -1578,6 +1578,25 @@ const ORIGEN_ENVIO = "Buenos Aires, Medellín, Antioquia, Colombia";
 const CACHE_GEOCODIFICACION = new Map();
 const CACHE_GEOCODIFICACION_MS = 24 * 60 * 60 * 1000;
 
+function normalizarDireccionMedellin(direccion) {
+  const limpia = String(direccion || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\b(cra|cr|carrera)\.?\s*/i, "Carrera ")
+    .replace(/\b(cl|calle)\.?\s*/i, "Calle ")
+    .replace(/\b(transv|transversal)\.?\s*/i, "Transversal ")
+    .replace(/\b(diag|diagonal)\.?\s*/i, "Diagonal ");
+
+  // Convierte, por ejemplo, "carrera 29 38 f 187" en
+  // "Carrera 29 # 38F-187", nomenclatura que los geocodificadores
+  // reconocen con mucha más consistencia en Medellín.
+  return limpia.replace(
+    /^(Carrera|Calle|Transversal|Diagonal)\s+(\d+[A-Za-z]?)\s+(?:#\s*)?(\d+)\s*([A-Za-z]?)\s*[- ]?\s*(\d+)$/i,
+    (_, via, numeroVia, numeroCruce, letra, placa) =>
+      via + " " + numeroVia + " # " + numeroCruce + (letra ? letra.toUpperCase() : "") + "-" + placa
+  );
+}
+
 async function geocodificarEnvio(consulta) {
   const clave = consulta.toLocaleLowerCase("es-CO").trim();
   const cache = CACHE_GEOCODIFICACION.get(clave);
@@ -1644,9 +1663,11 @@ app.post("/api/calcular-envio", async (req, res) => {
 
     // Primero buscamos solo la dirección: los nombres de barrio suelen hacer
     // fallar o ralentizar Nominatim. El barrio se conserva para la entrega.
+    const direccionNormalizada = normalizarDireccionMedellin(direccion);
     const consultasDestino = [
-      direccion + ", Medellín, Antioquia, Colombia",
-      direccion + ", " + barrio + ", Medellín, Colombia"
+      direccionNormalizada + ", Medellín, Antioquia, Colombia",
+      direccionNormalizada + ", " + barrio + ", Medellín, Colombia",
+      direccion + ", Medellín, Antioquia, Colombia"
     ];
 
     let destino = null;
