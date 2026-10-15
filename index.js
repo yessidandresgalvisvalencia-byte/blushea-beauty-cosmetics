@@ -742,7 +742,7 @@ function mapearProducto(
    Sin precio, stock ni imagen hasta completar la ficha.
    ========================================================= */
 
-const CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
+const CATALOGO_ACCESORIOS_DOCUMENTO = require("./data/catalogo-accesorios-documento.json");\n\nconst CATALOGO_MAQUILLAJE_PROXIMAMENTE = [
   {id:"makeup-ruby-rose-feels",nombre:"Corrector Líquido Ruby Rose Feels",categoria:"Correctores",descripcion:"Corrector líquido con aplicador incorporado para complementar la rutina y trabajar ojeras, pequeñas imperfecciones o áreas donde quieras unificar visualmente el tono de la piel.",tonos:["Caramelo 50","Amendoa 30","Castanha 20"]},
   {id:"makeup-atenea-concealer",nombre:"Corrector Atenea 1st Scene Concealer",categoria:"Correctores",descripcion:"Corrector de maquillaje para unificar visualmente el tono y trabajar imperfecciones localizadas.",tonos:["00 Light","0.5 Warm Ivory","01 Natural","02 Beige","03 Vanilla","04 Ivory","4.5 Olive Beige","05 Espresso","5.5 Desert","06 Orange","07 Rose","08 Cocoa","09 Lila","10 Yellow","11 Green","12 Blue"]},
   {id:"makeup-anik-concealer",nombre:"Corrector de Ojeras Ani-K Makeup",categoria:"Correctores",descripcion:"Corrector líquido diseñado para complementar tu maquillaje y ayudarte a conseguir una apariencia más uniforme y definida. Presentación de 4.3 ml.",tonos:["00 Snow","01 Bone","02 Radiant","03 Honey","04 Ginger","05 Golden Brown"]},
@@ -824,7 +824,7 @@ app.get(
 
 
       res.json(
-        productos.concat(CATALOGO_MAQUILLAJE_PROXIMAMENTE)
+        productos.concat(CATALOGO_MAQUILLAJE_PROXIMAMENTE, CATALOGO_ACCESORIOS_DOCUMENTO)
       );
 
 
