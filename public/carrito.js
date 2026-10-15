@@ -841,8 +841,13 @@ function cambiarCantidad(
 
 
   if (
-    nuevaCantidad < 1
+    nuevaCantidad < 1 ||
+    nuevaCantidad > 99
   ) {
+
+    if (nuevaCantidad > 99) {
+      alert("Puedes agregar máximo 99 unidades del mismo producto.");
+    }
 
     return;
 
