@@ -1,0 +1,1 @@
+export default function NotFound(){return <main className="error-state"><span>404 · GLAMOUR STUDIO</span><h1>Esta página se fue a retocar.</h1><a href="/">VOLVER A LA TIENDA</a></main>}
