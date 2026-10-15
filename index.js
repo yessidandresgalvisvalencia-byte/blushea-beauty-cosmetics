@@ -1581,6 +1581,7 @@ app.delete(
    ========================================================= */
 
 const PRECIO_KM = 1200;
+const TARIFA_PLANA_ENVIO = 12000;
 const ORIGEN_ENVIO = "Buenos Aires, Medellín, Antioquia, Colombia";
 const CACHE_GEOCODIFICACION = new Map();
 const CACHE_GEOCODIFICACION_MS = 24 * 60 * 60 * 1000;
@@ -1716,81 +1717,18 @@ app.post("/api/calcular-envio", async (req, res) => {
       });
     }
 
-    const tarifaManual = tarifaManualBarrio(barrio);
-    if (tarifaManual) {
-      return res.json({
-        ciudad: "Medellín",
-        origen: "Tarifa definida por administrador",
-        barrio,
-        distanciaKm: null,
-        distanciaCobradaKm: null,
-        precioKm: null,
-        valorEnvio: tarifaManual.precio,
-        tarifaManual: true
-      });
-    }
-
-    // El origen es fijo; evitamos geocodificarlo en cada cálculo.
-    // Coordenadas aproximadas de Buenos Aires, Medellín.
-    const origen = { lat: 6.2357, lon: -75.5526 };
-
-    // Primero buscamos solo la dirección: los nombres de barrio suelen hacer
-    // fallar o ralentizar Nominatim. El barrio se conserva para la entrega.
-    const direccionNormalizada = normalizarDireccionMedellin(direccion);
-    const consultasDestino = [
-      direccionNormalizada + ", Medellín, Antioquia, Colombia",
-      direccionNormalizada + ", " + barrio + ", Medellín, Colombia",
-      direccion + ", Medellín, Antioquia, Colombia",
-      barrio + ", Medellín, Antioquia, Colombia"
-    ];
-
-    let destino = null;
-    for (const consulta of consultasDestino) {
-      try {
-        destino = await geocodificarEnvio(consulta);
-      } catch (error) {
-        console.warn("Geocodificación fallida:", consulta, error.message);
-      }
-      if (destino) break;
-    }
-
-    if (!destino) {
-      return res.status(422).json({
-        mensaje: "No pudimos ubicar la zona de entrega. Escribe un barrio reconocido de Medellín."
-      });
-    }
-
-    // Seguridad: Nominatim puede devolver coincidencias homónimas fuera del
-    // Valle de Aburrá. No cotizamos una ruta si las coordenadas no corresponden
-    // razonablemente a Medellín.
-    const dentroDeMedellin =
-      destino.lat >= 6.10 && destino.lat <= 6.38 &&
-      destino.lon >= -75.70 && destino.lon <= -75.45;
-
-    if (!dentroDeMedellin) {
-      return res.status(422).json({
-        mensaje: "La dirección o el barrio no parecen corresponder a Medellín."
-      });
-    }
-
-    const distanciaKm = await distanciaConduccionKm(origen, destino);
-    if (!Number.isFinite(distanciaKm) || distanciaKm < 0) {
-      return res.status(503).json({
-        mensaje: "No pudimos calcular la ruta del domicilio en este momento."
-      });
-    }
-
-    const distanciaCobradaKm = Math.max(1, Math.ceil(distanciaKm));
-    const valorEnvio = distanciaCobradaKm * PRECIO_KM;
-
+    // Etapa inicial: tarifa plana para cualquier domicilio en Medellín.
+    // Conservamos dirección y barrio como datos de entrega, pero el precio
+    // no depende del geocodificador ni de la distancia.
     return res.json({
       ciudad: "Medellín",
-      origen: "Buenos Aires",
+      origen: "Tarifa plana",
       barrio,
-      distanciaKm: Number(distanciaKm.toFixed(2)),
-      distanciaCobradaKm,
-      precioKm: PRECIO_KM,
-      valorEnvio
+      distanciaKm: null,
+      distanciaCobradaKm: null,
+      precioKm: null,
+      valorEnvio: TARIFA_PLANA_ENVIO,
+      tarifaPlana: true
     });
   } catch (error) {
     console.error("Error calculando envío:", error);
@@ -2006,52 +1944,11 @@ app.post(
         );
 
 
-      // El domicilio nunca se confía al navegador. Si el administrador
-      // definió una tarifa para el barrio, esa tarifa es la autoridad.
-      const tarifaManualPedido = tarifaManualBarrio(cliente.barrio);
-      const origenPedido = { lat: 6.2357, lon: -75.5526 };
-      const direccionPedidoNormalizada = normalizarDireccionMedellin(cliente.direccion);
-      const consultasDestinoPedido = [
-        direccionPedidoNormalizada + ", Medellín, Antioquia, Colombia",
-        direccionPedidoNormalizada + ", " + cliente.barrio + ", Medellín, Colombia",
-        cliente.direccion + ", Medellín, Antioquia, Colombia",
-        cliente.barrio + ", Medellín, Antioquia, Colombia"
-      ];
-
-      let destinoPedido = null;
-      for (const consulta of consultasDestinoPedido) {
-        try {
-          destinoPedido = await geocodificarEnvio(consulta);
-        } catch (error) {
-          console.warn("Geocodificación de pedido fallida:", consulta, error.message);
-        }
-        if (destinoPedido) break;
-      }
-
-      if (!tarifaManualPedido && !destinoPedido) {
-        return res.status(422).json({
-          mensaje: "No pudimos ubicar la zona de entrega en Medellín."
-        });
-      }
-
-      let distanciaPedidoKm = null;
-      let distanciaCobradaPedidoKm = null;
-      let envioServidor;
-
-      if (tarifaManualPedido) {
-        envioServidor = tarifaManualPedido.precio;
-      } else {
-        distanciaPedidoKm = await distanciaConduccionKm(origenPedido, destinoPedido);
-
-        if (!Number.isFinite(distanciaPedidoKm) || distanciaPedidoKm < 0) {
-          return res.status(503).json({
-            mensaje: "No pudimos validar la ruta del domicilio en este momento."
-          });
-        }
-
-        distanciaCobradaPedidoKm = Math.max(1, Math.ceil(distanciaPedidoKm));
-        envioServidor = distanciaCobradaPedidoKm * PRECIO_KM;
-      }
+      // Tarifa plana inicial: el servidor impone $12.000 COP para cualquier
+      // dirección/barrio. El navegador no puede alterar este valor.
+      const distanciaPedidoKm = null;
+      const distanciaCobradaPedidoKm = null;
+      const envioServidor = TARIFA_PLANA_ENVIO;
 
       if (
         !Number.isFinite(subtotal) ||
