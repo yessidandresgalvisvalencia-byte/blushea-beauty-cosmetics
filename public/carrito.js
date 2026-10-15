@@ -77,6 +77,8 @@ let envioCalculado =
 let procesandoPedido =
   false;
 
+let mensajeEnvio = "";
+
 
 /* =========================================================
    LEER CARRITO
@@ -300,15 +302,10 @@ function calcularTotal() {
    ========================================================= */
 
 function invalidarEnvio() {
-
   envio = 0;
-
-  envioCalculado =
-    false;
-
-
+  envioCalculado = false;
+  mensajeEnvio = "";
   pintarResumen();
-
 }
 
 
@@ -368,7 +365,7 @@ function pintarResumen() {
               ? formatearPrecio(
                   envio
                 )
-              : "Por calcular"
+              : (mensajeEnvio || "Escribe dirección y barrio")
           }
 
         </strong>
@@ -973,7 +970,9 @@ async function calcularEnvioAutomatico() {
   const solicitud = ++solicitudEnvioActual;
 
   botonCalcularEnvio.disabled = true;
-  botonCalcularEnvio.textContent = "Calculando...";
+  botonCalcularEnvio.textContent = "Calculando domicilio...";
+  mensajeEnvio = "Calculando...";
+  pintarResumen();
 
   try {
     const controlador = new AbortController();
@@ -1000,6 +999,7 @@ async function calcularEnvioAutomatico() {
     if (!respuesta.ok) {
       envio = 0;
       envioCalculado = false;
+      mensajeEnvio = resultado.mensaje || "No pudimos ubicar la dirección";
       pintarResumen();
       return;
     }
@@ -1011,19 +1011,23 @@ async function calcularEnvioAutomatico() {
 
     envio = valorEnvio;
     envioCalculado = true;
+    mensajeEnvio = "";
     pintarResumen();
   } catch (error) {
     if (solicitud !== solicitudEnvioActual) return;
     console.error("Error calculando envío:", error);
     envio = 0;
     envioCalculado = false;
+    mensajeEnvio = error?.name === "AbortError"
+      ? "El cálculo tardó demasiado. Toca para reintentar."
+      : "No pudimos calcular el domicilio. Toca para reintentar.";
     pintarResumen();
   } finally {
     if (solicitud === solicitudEnvioActual) {
       botonCalcularEnvio.disabled = false;
       botonCalcularEnvio.textContent = envioCalculado
         ? "Envío calculado ✓"
-        : "Calcular envío";
+        : "Reintentar cálculo";
     }
   }
 }
