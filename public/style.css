@@ -195,22 +195,34 @@ button {
   background: var(--surface-pink);
 }
 
-.admin-link,
-.cart-link {
+.admin-link {
   padding: 11px 18px !important;
-
   background: var(--text);
-
   color: #fff !important;
-
   box-shadow: 0 8px 20px rgba(31, 25, 27, 0.12);
 }
 
-.admin-link:hover,
-.cart-link:hover {
-  background: var(--accent-dark);
+.cart-link {
+  padding: 10px 14px !important;
+  background: transparent;
+  color: #51474a !important;
+  box-shadow: none;
+}
 
+.admin-link:hover {
+  background: var(--accent-dark);
   transform: translateY(-1px);
+}
+
+.cart-link:hover {
+  color: var(--accent-dark) !important;
+  background: var(--surface-pink);
+}
+
+.cart-link.has-items {
+  background: var(--accent-dark);
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(141, 56, 85, 0.18);
 }
 
 
