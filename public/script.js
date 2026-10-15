@@ -159,6 +159,11 @@ function actualizarContadorCarrito() {
     contadorCarrito.hidden =
       cantidad <= 0;
 
+    const enlaceCarrito = contadorCarrito.closest(".cart-link");
+    if (enlaceCarrito) {
+      enlaceCarrito.classList.toggle("has-items", cantidad > 0);
+    }
+
   } catch (error) {
     console.error(
       "Error leyendo carrito:",
@@ -167,6 +172,10 @@ function actualizarContadorCarrito() {
 
     contadorCarrito.textContent = "0";
     contadorCarrito.hidden = true;
+    const enlaceCarrito = contadorCarrito.closest(".cart-link");
+    if (enlaceCarrito) {
+      enlaceCarrito.classList.remove("has-items");
+    }
   }
 }
 
