@@ -1088,8 +1088,59 @@ function activarVariantesTarjeta(
 
 
 /* =========================================================
-   FILTROS
+   CLASIFICACIÓN COMERCIAL POR ZONA
    ========================================================= */
+
+function normalizarTextoCategoria(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function obtenerZonaProducto(producto) {
+  const texto = normalizarTextoCategoria([
+    producto?.categoria,
+    producto?.nombre,
+    producto?.descripcion
+  ].join(" "));
+
+  // Ojos: sombras, pestañas, delineadores, máscaras y productos de cejas.
+  if (/sombra|pestana|pestañ|delineador|eyeliner|mascara|rimel|rímel|ceja|brow/.test(texto)) {
+    return "Ojos";
+  }
+
+  // Rostro: preparación/cobertura, color y definición del rostro.
+  if (/\bbase\b|foundation|corrector|concealer|polvo|contorno|bronzer|rubor|blush|iluminador|highlighter|tinta liquida/.test(texto)) {
+    return "Rostro";
+  }
+
+  if (/labial|labios|lipstick|lip gloss|gloss|balsamo labial|tinta labial/.test(texto)) {
+    return "Labios";
+  }
+
+  if (/skincare|serum|suero|crema facial|limpiador facial|tonico facial|protector solar/.test(texto)) {
+    return "Skincare";
+  }
+
+  if (/brocha|pincel|esponja|beauty blender/.test(texto)) {
+    return "Brochas";
+  }
+
+  if (/cosmetiquera|washbag|estuche|organizador/.test(texto)) {
+    return "Accesorios";
+  }
+
+  if (/corporal|cuerpo|body/.test(texto)) {
+    return "Corporal";
+  }
+
+  if (/capilar|cabello|hair/.test(texto)) {
+    return "Capilar";
+  }
+
+  return "Otros";
+}
 
 function aplicarFiltros() {
 
@@ -1128,6 +1179,9 @@ function aplicarFiltros() {
             producto.categoria || ""
           );
 
+        const zonaProducto =
+          obtenerZonaProducto(producto);
+
 
         const variantes =
           obtenerVariantes(
@@ -1151,12 +1205,13 @@ function aplicarFiltros() {
           categoriaProducto
             .toLowerCase()
             .includes(texto) ||
+          zonaProducto.toLowerCase().includes(texto) ||
           textoVariantes.includes(texto);
 
 
         const coincideCategoria =
           categoria === "Todos" ||
-          categoriaProducto === categoria;
+          zonaProducto === categoria;
 
 
         return (
