@@ -558,6 +558,8 @@ function pintarProductos(productos) {
              PRECIO Y STOCK
              ============================================= -->
 
+        ${producto.precioPrueba ? '<p class="product-description"><strong>PRECIO DE PRUEBA · No disponible para compra real</strong></p>' : ""}
+
         <div class="product-meta">
 
           <strong>
