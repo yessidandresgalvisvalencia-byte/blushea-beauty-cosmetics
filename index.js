@@ -3103,6 +3103,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "PREFERENCIAS SENSORIALES: pesado, ligero, pegajoso, seco o comodo son experiencias subjetivas; no atribuyas una sensacion concreta a una referencia sin informacion verificada.",
     "FOTOS Y REDES: si busca un look para fotos o redes, ayuda con tecnica, contraste y acabado de forma general sin prometer como se vera bajo todas las camaras o iluminaciones.",
     "EXPECTATIVAS: no prometas que un maquillaje cambiara rasgos fisicos de forma permanente. Describe efectos visuales temporales como definir, iluminar, suavizar visualmente o dar dimension."
+    "SINONIMOS DE PRODUCTO: interpreta rimel como mascara de pestanas, labial como lipstick, brillo como gloss cuando el contexto sea labios, delineador segun ojos o labios, y esponjita como esponja de maquillaje. Usa despues el nombre oficial del catalogo.",
+    "AMBIGUEDAD DE BRILLO: brillo puede significar gloss labial, iluminador o exceso de sebo segun contexto. No elijas una categoria sin suficiente evidencia.",
+    "AMBIGUEDAD DE DELINEADOR: si dice delineador sin contexto y existen opciones de ojos y labios, pregunta cual necesita antes de recomendar.",
+    "ERRORES ORTOGRAFICOS: tolera errores razonables de marca, categoria y producto comparando con el catalogo, pero no conviertas una coincidencia debil en certeza; confirma cuando haya dos candidatos plausibles.",
+    "NOMBRES PARCIALES: si escribe solo una parte distintiva del nombre de un producto, identifica la referencia cuando sea unica. Si coincide con varias, muestra o pregunta por las coincidencias concretas.",
+    "NUMEROS DE TONO: interpreta un numero como tono solo cuando el contexto inmediato habla de tonos o de un producto con tonos. No confundas precio, cantidad o numero de producto con tono.",
+    "FORMATO DE PRECIO: presenta COP de manera natural para Colombia, por ejemplo $32.900, conservando el valor exacto del catalogo.",
+    "MARCAS PARECIDAS: no fusiones marcas diferentes por similitud ortografica. Una correccion de marca debe estar suficientemente respaldada por las referencias reales del catalogo."
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
