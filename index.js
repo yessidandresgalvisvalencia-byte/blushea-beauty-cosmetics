@@ -3254,15 +3254,24 @@ app.post("/api/asesora-belleza", async (req, res) => {
     let parsed;
     try { parsed = JSON.parse(outputText.replace(/^\x60\x60\x60json\s*|\s*\x60\x60\x60$/g, "")); }
     catch { parsed = { reply: outputText, productIds: [], followUp: "" }; }
+    const idsValidos = new Set(catalogo.map(p => String(p.id)));
+    const productIds = Array.isArray(parsed && parsed.productIds)
+      ? [...new Set(parsed.productIds.map(id => String(id)).filter(id => idsValidos.has(id)))].slice(0, 4)
+      : [];
+    const respuestaIA = textoSeguro(parsed && parsed.reply, 1600);
+    if (!respuestaIA) throw new Error("Respuesta IA vacía o inválida");
     return res.json({
-      respuesta: textoSeguro(parsed && parsed.reply, 1600) || "Cuéntame un poquito más sobre lo que buscas y te ayudo a elegir.",
+      respuesta: respuestaIA,
       pregunta: textoSeguro(parsed && parsed.followUp, 300),
-      productos: productosVerificadosPorIds(parsed && parsed.productIds, catalogo),
+      productos: productosVerificadosPorIds(productIds, catalogo),
       modo: "ia"
     });
   } catch (error) {
     console.error("Error asesora virtual:", error.message);
-    const contextoFallback = historial.slice(-6).map(item => item.content).concat([mensaje]).join(" ");
+    const mensajeNormalizado = normalizarAsesora(mensaje);
+    const dependeDelContexto = /^(si|no|ese|esa|eso|este|esta|el primero|el segundo|la primera|la segunda|precio|tonos|colores|cuanto|cuanto vale|y ese|y esa|y el otro|y la otra)$/.test(mensajeNormalizado);
+    const productoReferenciado = dependeDelContexto ? referenciaFallbackAsesora(mensaje, historial, catalogo) : "";
+    const contextoFallback = productoReferenciado ? (mensaje + " " + productoReferenciado) : mensaje;
     const fallback = respuestaFallbackAsesora(contextoFallback, catalogo);
     return res.json({ respuesta: fallback.reply, pregunta: fallback.followUp, productos: productosVerificadosPorIds(fallback.productIds, catalogo), modo: "catalogo" });
   }
