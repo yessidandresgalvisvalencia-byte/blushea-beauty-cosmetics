@@ -2765,8 +2765,20 @@ function puntajeProductoAsesora(q, producto) {
   return score;
 }
 
+function presupuestoFallbackAsesora(texto) {
+  const q = normalizarAsesora(texto);
+  const match = q.match(/(?:presupuesto|tengo|hasta|maximo|menos de|por debajo de|no mas de)?\s*\$?\s*(\d{1,7}(?:[.,]\d{3})?|\d+(?:[.,]\d+)?)\s*(k|mil)?\b/);
+  if (!match) return null;
+  let numero = Number(String(match[1]).replace(/[.,]/g, ""));
+  if (!Number.isFinite(numero) || numero <= 0) return null;
+  if (match[2] === "k" || match[2] === "mil") numero *= 1000;
+  // Evita interpretar numeros de tono/cantidad pequeños como presupuesto.
+  return numero >= 1000 && numero <= 10000000 ? numero : null;
+}
+
 function respuestaFallbackAsesora(mensaje, catalogo) {
   const q = normalizarAsesora(mensaje);
+  const presupuestoDetectado = presupuestoFallbackAsesora(q);
   const esPrecio = /\b(precio|cuanto cuesta|cuanto vale|valor)\b/.test(q);
   const esTonos = /\b(tono|tonos|color|colores)\b/.test(q);
   const esStock = /\b(stock|existencia|disponible|disponibilidad|hay)\b/.test(q);
@@ -2836,7 +2848,14 @@ function respuestaFallbackAsesora(mensaje, catalogo) {
   let filtrados = catalogo;
   if (/base|corrector|rostro|rubor|polvo|contorno|iluminador/.test(q)) filtrados = catalogo.filter(p => /base|corrector|rostro|rubor|polvo|contorno|iluminador/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
   else if (/ojo|pestana|sombra|delineador|ceja|rimel/.test(q)) filtrados = catalogo.filter(p => /ojo|pestana|sombra|delineador|ceja|rimel/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
+  else if (/labio|labial|gloss|tinta|balsamo|delineador labial/.test(q)) filtrados = catalogo.filter(p => /labio|labial|gloss|tinta|balsamo|delineador labial/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
+  else if (/skincare|serum|hidratante|limpiador|micelar|tonico|protector solar|mascarilla|exfoliante/.test(q)) filtrados = catalogo.filter(p => /skincare|serum|hidratante|limpiador|micelar|tonico|protector solar|mascarilla|exfoliante/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
   else if (/brocha|pincel|esponja/.test(q)) filtrados = catalogo.filter(p => /brocha|pincel|esponja/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
+
+  if (presupuestoDetectado) {
+    filtrados = filtrados.filter(p => Number(p.precio || 0) <= presupuestoDetectado);
+    filtrados.sort((a,b) => Number(a.precio || 0) - Number(b.precio || 0));
+  }
 
   return {
     reply: filtrados.length ? "Encontré estas opciones relacionadas con lo que buscas. Dime cuál te interesa y te doy la información exacta." : "No encontré un producto exacto con ese nombre en el catálogo. Si me dices el nombre o la categoría, lo busco por ti.",
