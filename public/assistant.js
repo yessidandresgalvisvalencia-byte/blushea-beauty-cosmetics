@@ -39,7 +39,8 @@ const form=root.querySelector(".beauty-assistant-form");
 const input=form.querySelector("input");
 const thinking=root.querySelector(".beauty-ai-thinking");
 
-function toggle(open){panel.classList.toggle("is-open",open);panel.setAttribute("aria-hidden",String(!open));launcher.setAttribute("aria-expanded",String(open));if(open)setTimeout(()=>input.focus(),150)}
+function toggle(open){panel.classList.toggle("is-open",open);panel.setAttribute("aria-hidden",String(!open));launcher.setAttribute("aria-expanded",String(open));if(open)setTimeout(()=>input.focus(),150);else launcher.focus()}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("is-open"))toggle(false)});
 function save(){try{sessionStorage.setItem(STORAGE,JSON.stringify(state.history.slice(-12)))}catch{}}
 function add(text,role){const el=document.createElement("div");el.className="beauty-message beauty-message-"+(role==="user"?"user":"bot");el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight}
 function money(n){return "$"+Number(n||0).toLocaleString("es-CO")}
@@ -48,7 +49,7 @@ function products(items){
   const wrap=document.createElement("div");wrap.className="beauty-ai-products";
   items.forEach(p=>{
     const a=document.createElement("a");a.className="beauty-result";a.href=p.url;
-    const tones=Array.isArray(p.tonos)&&p.tonos.length?" · "+p.tonos.slice(0,3).join(" · "):"";
+    const tones=Array.isArray(p.tonos)&&p.tonos.length?" · "+p.tonos.join(" · "):"";
     a.innerHTML="<strong></strong><span></span><small></small>";
     a.querySelector("strong").textContent=p.nombre;
     a.querySelector("span").textContent=money(p.precio)+tones;
@@ -57,7 +58,10 @@ function products(items){
   });
   messages.appendChild(wrap);messages.scrollTop=messages.scrollHeight;
 }
+let busy=false;
 async function ask(q){
+  if(busy)return;
+  busy=true;
   add(q,"user");
   const prior=state.history.slice(-10);
   state.history.push({role:"user",content:q});save();
@@ -70,7 +74,7 @@ async function ask(q){
     add(answer,"assistant");products(data.productos);
     state.history.push({role:"assistant",content:answer});save();
   }catch(e){add("Se me cruzó un problemita técnico 💗. Inténtalo otra vez en un momento o escríbenos por WhatsApp.","assistant")}
-  finally{thinking.hidden=true;input.disabled=false;input.focus()}
+  finally{busy=false;thinking.hidden=true;input.disabled=false;input.focus()}
 }
 launcher.addEventListener("click",()=>toggle(!panel.classList.contains("is-open")));
 close.addEventListener("click",()=>toggle(false));
