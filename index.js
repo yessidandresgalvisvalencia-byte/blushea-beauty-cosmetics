@@ -2869,7 +2869,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
   const catalogo = catalogoVerificadoAsesora();
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    const fallback = respuestaFallbackAsesora(mensaje, catalogo);
+    const contextoFallback = [
+      historial.slice(-6).map(item => item.content).join(" "),
+      perfil.tipoPiel ? " piel " + perfil.tipoPiel : "",
+      perfil.subtono ? " subtono " + perfil.subtono : "",
+      perfil.presupuesto ? " presupuesto " + perfil.presupuesto : "",
+      mensaje
+    ].join(" ").trim();
+    const fallback = respuestaFallbackAsesora(contextoFallback, catalogo);
     return res.json({ respuesta: fallback.reply, pregunta: fallback.followUp, productos: productosVerificadosPorIds(fallback.productIds, catalogo), modo: "catalogo" });
   }
 
@@ -2977,7 +2984,8 @@ app.post("/api/asesora-belleza", async (req, res) => {
     });
   } catch (error) {
     console.error("Error asesora virtual:", error.message);
-    const fallback = respuestaFallbackAsesora(mensaje, catalogo);
+    const contextoFallback = historial.slice(-6).map(item => item.content).concat([mensaje]).join(" ");
+    const fallback = respuestaFallbackAsesora(contextoFallback, catalogo);
     return res.json({ respuesta: fallback.reply, pregunta: fallback.followUp, productos: productosVerificadosPorIds(fallback.productIds, catalogo), modo: "catalogo" });
   }
 });
