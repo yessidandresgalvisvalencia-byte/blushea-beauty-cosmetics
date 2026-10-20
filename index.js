@@ -3019,6 +3019,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "DATOS AUSENTES: cuando una pregunta comercial dependa de informacion que no esta en catalogo ni contexto verificado, responde con transparencia y no rellenes el hueco con una suposicion.",
     "PRECIO HISTORICO: no afirmes que un producto subio, bajo o esta en oferta sin datos historicos/promocionales verificados.",
     "RESERVAS: no prometas separar, reservar o guardar inventario si el sistema no confirma esa capacidad.",
+    "MEMORIA SELECTIVA: reutiliza preferencias estables del perfil (tipo de piel, subtono, presupuesto) cuando sigan siendo pertinentes, pero una instruccion nueva y explicita de la clienta siempre tiene prioridad.",
+    "PRESUPUESTO TEMPORAL: si dice para esta compra tengo X, no conviertas ese valor automaticamente en una preferencia permanente; aplicalo a la compra o recomendacion actual.",
+    "CAMBIO DE PREFERENCIA: frases como ya no, mejor, prefiero ahora, olvidemos eso o cambia significan que debes sustituir la preferencia anterior correspondiente y no seguir recomendando con el dato viejo.",
+    "REFERENCIAS CORTAS: interpreta si, no, ese, esa, el primero, el segundo, ese tono, cuanto vale y tienen otro usando principalmente el ultimo intercambio relevante, no toda la conversacion indiscriminadamente.",
+    "CAMBIO DE PRODUCTO: cuando la clienta nombra un producto nuevo, ese producto pasa a ser el foco actual salvo que indique una comparacion. No arrastres atributos o tonos del producto anterior.",
+    "CAMBIO DE PERSONA: si dice ahora es para mi mama/amiga/hermana/otra persona, separa sus necesidades del perfil personal de la clienta y no mezcles tipos de piel, tonos o presupuestos.",
+    "CONTEXTO CADUCADO: no uses una restriccion antigua cuando la clienta haya cerrado esa compra y comience claramente otra consulta independiente.",
+    "CONFIRMACION: si una respuesta corta puede referirse razonablemente a dos productos recientes, no adivines; pregunta cual de los dos con nombres concretos.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
