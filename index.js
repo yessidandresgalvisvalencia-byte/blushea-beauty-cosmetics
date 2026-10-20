@@ -1672,11 +1672,30 @@ function tarifaManualBarrio(barrio) {
   return leerJSON(tarifasEnvioPath).find(item => item.clave === clave) || null;
 }
 
-app.get("/api/admin/tarifas-envio", (req, res) => {
+function exigirAdmin(req, res, next) {
+  const secreto = String(process.env.ADMIN_API_KEY || "").trim();
+  if (!secreto) {
+    return res.status(503).json({ mensaje: "Administración no configurada." });
+  }
+  const recibido = String(req.get("x-admin-key") || "").trim();
+  if (!recibido || recibido.length !== secreto.length) {
+    return res.status(401).json({ mensaje: "No autorizado." });
+  }
+  try {
+    const crypto = require("crypto");
+    const valido = crypto.timingSafeEqual(Buffer.from(recibido), Buffer.from(secreto));
+    if (!valido) return res.status(401).json({ mensaje: "No autorizado." });
+  } catch {
+    return res.status(401).json({ mensaje: "No autorizado." });
+  }
+  next();
+}
+
+app.get("/api/admin/tarifas-envio", exigirAdmin, (req, res) => {
   res.json(leerJSON(tarifasEnvioPath));
 });
 
-app.post("/api/admin/tarifas-envio", (req, res) => {
+app.post("/api/admin/tarifas-envio", exigirAdmin, (req, res) => {
   const barrio = textoSeguro(req.body.barrio, 120);
   const precio = numeroPositivo(req.body.precio);
   const clave = claveBarrioEnvio(barrio);
@@ -1701,7 +1720,7 @@ app.post("/api/admin/tarifas-envio", (req, res) => {
   return res.json({ mensaje: "Tarifa guardada correctamente.", tarifa: registro });
 });
 
-app.delete("/api/admin/tarifas-envio/:clave", (req, res) => {
+app.delete("/api/admin/tarifas-envio/:clave", exigirAdmin, (req, res) => {
   const clave = claveBarrioEnvio(decodeURIComponent(req.params.clave || ""));
   const tarifas = leerJSON(tarifasEnvioPath);
   const nuevas = tarifas.filter(item => item.clave !== clave);
@@ -2051,6 +2070,7 @@ app.post(
 
 app.get(
   "/api/pedidos",
+  exigirAdmin,
   (req, res) => {
 
     try {
@@ -2180,6 +2200,7 @@ const ESTADOS_PEDIDO =
 
 app.put(
   "/api/pedidos/:id/estado",
+  exigirAdmin,
   (req, res) => {
 
     try {
