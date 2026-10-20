@@ -2537,11 +2537,8 @@ app.post(
         );
 
 
-      if (
-        Number(
-          pedido.envio
-        ) > 0
-      ) {
+      // El valor de envío también es autoritativo del servidor.
+      if (TARIFA_PLANA_ENVIO > 0) {
 
         items.push({
 
@@ -2552,9 +2549,7 @@ app.post(
             1,
 
           unit_price:
-            Number(
-              pedido.envio
-            ),
+            TARIFA_PLANA_ENVIO,
 
           currency_id:
             "COP"
