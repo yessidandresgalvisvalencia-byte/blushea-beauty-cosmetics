@@ -2851,6 +2851,12 @@ app.post("/api/asesora-belleza", async (req, res) => {
     role: item && item.role === "assistant" ? "assistant" : "user",
     content: textoSeguro(item && item.content, 700)
   })).filter(item => item.content) : [];
+  const perfilEntrada = req.body && typeof req.body.perfil === "object" && req.body.perfil ? req.body.perfil : {};
+  const perfil = {
+    tipoPiel: textoSeguro(perfilEntrada.tipoPiel, 30),
+    subtono: textoSeguro(perfilEntrada.subtono, 30),
+    presupuesto: Number(perfilEntrada.presupuesto) > 0 ? Math.min(Number(perfilEntrada.presupuesto), 10000000) : null
+  };
   if (!mensaje) return res.status(400).json({ mensaje: "Escribe una consulta para tu asesora." });
 
   const ip = String(req.ip || (req.socket && req.socket.remoteAddress) || "anon");
@@ -2902,7 +2908,9 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
+  const contextoPerfil = Object.values(perfil).some(Boolean) ? "PERFIL RECORDADO DE LA CLIENTA (usa solo si sigue siendo pertinente): " + JSON.stringify(perfil) : "";
   const input = historial.concat([
+    ...(contextoPerfil ? [{ role: "user", content: contextoPerfil }] : []),
     { role: "user", content: mensaje },
     { role: "user", content: "CATALOGO VERIFICADO - FUENTE DE VERDAD:\n" + JSON.stringify(catalogoIA) }
   ]);
