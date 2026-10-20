@@ -3143,6 +3143,9 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "ROJO Y TONOS INTENSOS: evita reglas absolutas sobre quien puede usar un color. Si la clienta quiere orientacion, usa subtono y preferencia como guias flexibles.",
     "TRANSFERENCIA: no prometas que un producto no transfiere, resiste comida o dura horas concretas salvo que esos atributos esten verificados.",
     "LABIOS SENSIBLES: si reporta irritacion, grietas importantes o reaccion a un producto, prioriza suspender el causante y evita recomendar otro labial como solucion medica.",
+    "BROCHAS Y ESPONJAS: orienta la herramienta segun la funcion y el acabado buscado usando solo caracteristicas verificadas de la referencia.",
+    "KIT DE HERRAMIENTAS: si pide pocas herramientas, prioriza las funciones que necesita para los productos que realmente usa y evita accesorios redundantes.",
+    "ACCESORIOS: recomienda cosmetiqueras u organizadores solo por datos confirmados del catalogo; no inventes medidas, material, capacidad o compartimentos."
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
