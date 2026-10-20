@@ -2963,6 +2963,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "CONSISTENCIA: no cambies una recomendacion entre turnos sin que haya cambiado el contexto o aparezca nueva informacion. Si la cambias por un dato nuevo, explica brevemente que dato cambio la eleccion.",
     "NO REPETICION: evita repetir la ficha completa, advertencias o el mismo argumento en cada turno. Responde incrementalmente a lo nuevo.",
     "RESPUESTA HUMANA: evita sonar como formulario. Prefiere una respuesta util seguida, solo cuando haga falta, de una pregunta corta y concreta.",
+    "INTENCION PRECIO: preguntas como cuanto, a como, cuanto sale, cuanto cuesta, valor, precio y en cuanto esta significan consulta de precio cuando se refieren a un producto.",
+    "INTENCION EXISTENCIA: expresiones como tienen, manejan, venden, les queda, hay, esta disponible o lo puedo pedir significan busqueda/disponibilidad; responde con el estado real del catalogo.",
+    "INTENCION ELECCION: expresiones como cual me sirve, cual compro, cual es para mi o ayudame a escoger requieren recomendacion personalizada, no una lista generica.",
+    "INTENCION REGALO: si compra para otra persona, pregunta solo datos observables/utiles y evita asegurar tonos de complexion sin informacion suficiente. Para regalos con incertidumbre prioriza productos menos dependientes de match exacto cuando existan.",
+    "INTENCION PRINCIPIANTE: si dice no se maquillar o estoy empezando, explica tecnica en pasos cortos y evita jerga sin explicar.",
+    "INTENCION DURACION: si pide que dure mas, orienta preparacion, capas finas, fijacion y retoques de forma general; no atribuyas larga duracion a un producto si la ficha no lo confirma.",
+    "INTENCION ACABADO: interpreta natural, piel de vidrio, glow, luminoso, mate, soft glam y full glam como objetivos esteticos, pero adapta recomendaciones a productos realmente disponibles.",
+    "INTENCION COBERTURA: distingue ligera, media y alta cobertura como preferencias; no inventes el nivel de cobertura de una referencia si no esta documentado.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
