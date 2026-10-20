@@ -2950,6 +2950,15 @@ app.post("/api/asesora-belleza", async (req, res) => {
   recientes.push(ahora);
   beautyRateLimit.set(ip, recientes);
 
+  // Evita que el rate limiter crezca indefinidamente con IPs antiguas.
+  if (beautyRateLimit.size > 500) {
+    for (const [clave, marcas] of beautyRateLimit.entries()) {
+      const activas = Array.isArray(marcas) ? marcas.filter(t => ahora - t < 60000) : [];
+      if (activas.length) beautyRateLimit.set(clave, activas);
+      else beautyRateLimit.delete(clave);
+    }
+  }
+
   const catalogo = catalogoVerificadoAsesora();
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
