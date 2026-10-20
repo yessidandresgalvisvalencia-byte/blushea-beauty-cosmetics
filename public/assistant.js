@@ -1,6 +1,8 @@
 (()=>{
 const STORAGE="blusheaBeautyAdvisorV2";
-const state={history:[]};
+const PROFILE_STORAGE="blusheaBeautyProfileV1";
+const state={history:[],profile:{}};
+try{state.profile=JSON.parse(localStorage.getItem(PROFILE_STORAGE)||"{}")}catch{}
 try{state.history=JSON.parse(sessionStorage.getItem(STORAGE)||"[]").slice(-12)}catch{}
 
 const root=document.createElement("div");
@@ -42,6 +44,16 @@ const thinking=root.querySelector(".beauty-ai-thinking");
 function toggle(open){panel.classList.toggle("is-open",open);panel.setAttribute("aria-hidden",String(!open));launcher.setAttribute("aria-expanded",String(open));if(open)setTimeout(()=>input.focus(),150);else launcher.focus()}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("is-open"))toggle(false)});
 function save(){try{sessionStorage.setItem(STORAGE,JSON.stringify(state.history.slice(-12)))}catch{}}
+function learnProfile(q){
+  const t=q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const skin=t.match(/(?:mi piel es|tengo piel)\s+(seca|grasa|mixta|normal|sensible)/);
+  if(skin)state.profile.tipoPiel=skin[1];
+  const undertone=t.match(/(?:mi subtono es|subtono)\s+(calido|frio|neutro)/);
+  if(undertone)state.profile.subtono=undertone[1];
+  const budget=t.match(/(?:presupuesto|hasta|maximo|max)\D{0,8}(\d[\d.,]*)/);
+  if(budget){let n=Number(budget[1].replace(/\D/g,""));if(n>0&&n<1000)n*=1000;if(n>0)state.profile.presupuesto=n}
+  try{localStorage.setItem(PROFILE_STORAGE,JSON.stringify(state.profile))}catch{}
+}
 function add(text,role){const el=document.createElement("div");el.className="beauty-message beauty-message-"+(role==="user"?"user":"bot");el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight}
 function money(n){return "$"+Number(n||0).toLocaleString("es-CO")}
 function products(items){
@@ -64,10 +76,10 @@ async function ask(q){
   busy=true;
   add(q,"user");
   const prior=state.history.slice(-10);
-  state.history.push({role:"user",content:q});save();
+  state.history.push({role:"user",content:q});learnProfile(q);save();
   input.value="";input.disabled=true;thinking.hidden=false;
   try{
-    const r=await fetch("/api/asesora-belleza",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mensaje:q,historial:prior})});
+    const r=await fetch("/api/asesora-belleza",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mensaje:q,historial:prior,perfil:state.profile})});
     const data=await r.json();
     if(!r.ok)throw new Error(data.mensaje||"No pude responder");
     const answer=[data.respuesta,data.pregunta].filter(Boolean).join("\n\n");
