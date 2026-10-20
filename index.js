@@ -2489,34 +2489,46 @@ app.post(
       }
 
 
-      if (pedido.productos.some(producto =>
-        CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).some(demo => demo.soloDemostracion && String(demo.id) === String(producto.id))
-      )) {
+      const catalogoPago = CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO);
+      const lineasPago = pedido.productos.map(producto => {
+        const oficial = catalogoPago.find(item => String(item.id) === String(producto.id));
+        if (!oficial || oficial.soloDemostracion === true) return null;
+        const cantidad = Number(producto.cantidad);
+        const precio = Number(oficial.precio);
+        if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 99 || !Number.isFinite(precio) || precio < 0) return null;
+        return { producto, oficial, cantidad, precio };
+      });
+
+      if (lineasPago.some(linea => !linea)) {
         return res.status(409).json({
-          mensaje: "Pago deshabilitado para productos con precios de prueba."
+          mensaje: "El pedido contiene productos que ya no están habilitados para pago."
         });
       }
 
+      // Revalida precios contra el catálogo actual antes de crear la preferencia.
+      // Así un pedido antiguo o manipulado nunca determina el monto cobrado.
+      const subtotalPago = lineasPago.reduce((total, linea) => total + linea.precio * linea.cantidad, 0);
+      const totalPago = subtotalPago + TARIFA_PLANA_ENVIO;
+      if (!Number.isFinite(totalPago) || totalPago <= 0) {
+        return res.status(400).json({ mensaje: "No fue posible validar el total del pedido." });
+      }
+
       const items =
-        pedido.productos.map(
-          producto => ({
+        lineasPago.map(
+          linea => ({
 
             title:
-              producto.tono
+              linea.producto.tono
                 ?
-                `${producto.nombre} - ${producto.tono}`
+                `${linea.oficial.nombre} - ${linea.producto.tono}`
                 :
-                producto.nombre,
+                linea.oficial.nombre,
 
             quantity:
-              Number(
-                producto.cantidad
-              ),
+              linea.cantidad,
 
             unit_price:
-              Number(
-                producto.precio
-              ),
+              linea.precio,
 
             currency_id:
               "COP"
