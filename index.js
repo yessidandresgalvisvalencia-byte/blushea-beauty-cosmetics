@@ -2871,9 +2871,28 @@ function respuestaFallbackAsesora(mensaje, catalogo) {
     filtrados.sort((a,b) => Number(a.precio || 0) - Number(b.precio || 0));
   }
 
+  const pideMasBarato = /\b(mas barato|mas economico|economico|barato|menor precio)\b/.test(q);
+  const pideMasCaro = /\b(mas caro|mayor precio)\b/.test(q);
+  if (pideMasBarato) filtrados.sort((a,b) => Number(a.precio || 0) - Number(b.precio || 0));
+  if (pideMasCaro) filtrados.sort((a,b) => Number(b.precio || 0) - Number(a.precio || 0));
+
+  if (!filtrados.length) {
+    const limite = presupuestoDetectado ? " dentro de $" + Number(presupuestoDetectado).toLocaleString("es-CO") : "";
+    return {
+      reply: "No encontré una opción que cumpla esos filtros" + limite + " en el catálogo actual.",
+      productIds: [],
+      followUp: "¿Quieres que quite una de las restricciones y busque la alternativa más cercana?"
+    };
+  }
+
+  const seleccion = filtrados.slice(0, 3);
+  const mostrarPrecios = Boolean(presupuestoDetectado || pideMasBarato || pideMasCaro);
+  const detalle = mostrarPrecios
+    ? seleccion.map(p => p.nombre + " — $" + Number(p.precio || 0).toLocaleString("es-CO")).join("; ")
+    : "";
   return {
-    reply: filtrados.length ? "Encontré estas opciones relacionadas con lo que buscas. Dime cuál te interesa y te doy la información exacta." : "No encontré un producto exacto con ese nombre en el catálogo. Si me dices el nombre o la categoría, lo busco por ti.",
-    productIds: filtrados.slice(0, 3).map(p => p.id),
+    reply: mostrarPrecios ? "Estas opciones cumplen lo que pediste: " + detalle + "." : "Encontré estas opciones relacionadas con lo que buscas. Dime cuál te interesa y te doy la información exacta.",
+    productIds: seleccion.map(p => p.id),
     followUp: ""
   };
 }
