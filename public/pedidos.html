@@ -253,6 +253,20 @@
        ETIQUETAS MÁS CLARAS
        ===================================================== */
 
+    const ADMIN_KEY_STORAGE = "blusheaAdminApiKey";
+    function adminKey() {
+      let clave = sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
+      if (!clave) {
+        clave = window.prompt("Clave administrativa:") || "";
+        if (clave) sessionStorage.setItem(ADMIN_KEY_STORAGE, clave);
+      }
+      return clave;
+    }
+    function adminHeaders(extra = {}) {
+      const clave = adminKey();
+      return { ...extra, ...(clave ? { "x-admin-key": clave } : {}) };
+    }
+
     const ETIQUETAS_ESTADO = {
 
       Pendiente:
@@ -668,7 +682,8 @@
             "/api/pedidos",
             {
               cache:
-                "no-store"
+                "no-store",
+              headers: adminHeaders()
             }
           );
 
@@ -1297,12 +1312,12 @@
               method:
                 "PUT",
 
-              headers: {
+              headers: adminHeaders({
 
                 "Content-Type":
                   "application/json"
 
-              },
+              }),
 
               body:
                 JSON.stringify({
