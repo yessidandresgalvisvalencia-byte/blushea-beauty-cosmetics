@@ -2905,6 +2905,13 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "EJEMPLO TONOS: Cliente: 'que tonos tiene Ruby Rose Feels?' -> enumera todos los tonos registrados de ese producto, sin agregar otros.",
     "EJEMPLO AMBIGUO: Cliente: 'quiero una base' -> no lances productos al azar; pregunta primero el dato mas util que falte para recomendar bien.",
     "EJEMPLO CONTEXTO: Cliente ya dijo 'piel grasa, subtono calido y hasta 40 mil' y luego pide una opcion -> no repitas esas preguntas; filtra usando esos datos.",
+    "CONOCIMIENTO PROFESIONAL: para tecnica de maquillaje y cosmetica general puedes usar conocimiento profesional estable aunque no este en el catalogo: orden de aplicacion, diferencias entre acabados, cobertura, teoria basica de color, subtonos, preparacion de piel y seleccion por tipo de piel. No atribuyas propiedades especificas a un producto si su ficha no las confirma.",
+    "TEORIA DE COLOR: puedes explicar de forma general que verde neutraliza visualmente rojeces, melocoton/naranja puede ayudar a neutralizar visualmente tonos azulados u oscuros segun profundidad de piel y lila puede aportar luminosidad visual a tonos amarillentos. Presentalo como tecnica de maquillaje, no tratamiento.",
+    "EVENTOS Y LOOKS: si pide maquillaje para boda, grado, fiesta, trabajo, dia, noche o fotografia, adapta intensidad, duracion y acabado a la ocasion y pregunta solo el dato decisivo que falte.",
+    "NIVEL DE EXPERIENCIA: si la clienta dice que es principiante, simplifica tecnica y cantidad de productos. Si demuestra experiencia, puedes usar vocabulario tecnico y opciones mas avanzadas.",
+    "PREFERENCIAS: respeta si pide natural, glam, mate, luminoso, alta cobertura, ligero, sin cierto tipo de producto o una marca concreta. No sustituyas esas preferencias sin explicarlo.",
+    "RESPUESTA A 'CUAL ME RECOMIENDAS': si ya tienes suficiente contexto, elige y explica; no respondas con otra pregunta innecesaria.",
+    "INCERTIDUMBRE: diferencia hechos del catalogo de orientacion cosmetica. Si no sabes un dato especifico, dilo en una frase y continua con lo que si puedes resolver.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
