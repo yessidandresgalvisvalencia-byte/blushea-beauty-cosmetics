@@ -2596,7 +2596,13 @@ app.post(
             },
 
             auto_return:
-              "approved"
+              "approved",
+
+            // La URL de retorno mejora la experiencia, pero no confirma el pago.
+            // Mercado Pago notificará al backend para que el estado pueda
+            // verificarse del lado del servidor antes de considerarlo pagado.
+            notification_url:
+              `${baseUrl}/api/mercadopago/webhook`
 
           }
 
@@ -2735,6 +2741,30 @@ app.use(
   }
 );
 
+
+
+/* =========================================================
+   MERCADO PAGO - WEBHOOK
+   ========================================================= */
+
+app.post("/api/mercadopago/webhook", async (req, res) => {
+  // Respondemos rápido al proveedor. La verificación del pago debe hacerse
+  // consultando Mercado Pago con credenciales del servidor; nunca confiando
+  // en parámetros de la URL de retorno del navegador.
+  const tipo = textoSeguro((req.body && req.body.type) || (req.query && req.query.type), 80);
+  const dataId = textoSeguro(
+    (req.body && req.body.data && req.body.data.id) ||
+    (req.query && (req.query["data.id"] || req.query.id)),
+    120
+  );
+
+  if (!tipo || !dataId) {
+    return res.status(200).json({ recibido: true });
+  }
+
+  console.log("Mercado Pago webhook recibido:", tipo, dataId);
+  return res.status(200).json({ recibido: true });
+});
 
 
 /* =========================================================
