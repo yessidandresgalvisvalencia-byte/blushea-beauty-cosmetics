@@ -879,6 +879,7 @@ app.get(
 app.post(
   "/api/productos",
 
+  exigirAdmin,
   upload.fields([
 
     {
@@ -1384,6 +1385,7 @@ app.post(
 
 app.delete(
   "/api/productos/:id",
+  exigirAdmin,
   async (req, res) => {
 
     try {
@@ -2374,6 +2376,7 @@ app.put(
 
 app.get(
   "/api/ventas",
+  exigirAdmin,
   (req, res) => {
 
     try {
