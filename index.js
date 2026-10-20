@@ -2869,14 +2869,19 @@ app.post("/api/asesora-belleza", async (req, res) => {
   const catalogo = catalogoVerificadoAsesora();
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    const contextoFallback = [
-      historial.slice(-6).map(item => item.content).join(" "),
-      perfil.tipoPiel ? " piel " + perfil.tipoPiel : "",
-      perfil.subtono ? " subtono " + perfil.subtono : "",
-      perfil.presupuesto ? " presupuesto " + perfil.presupuesto : "",
-      mensaje
-    ].join(" ").trim();
-    const fallback = respuestaFallbackAsesora(contextoFallback, catalogo);
+    // El mensaje actual manda. Solo usamos contexto reciente para respuestas realmente
+    // dependientes del turno anterior; concatenar toda la conversación contamina
+    // búsquedas de producto, precio y categoría con intenciones antiguas.
+    const mensajeNormalizado = normalizarAsesora(mensaje);
+    const dependeDelContexto = /^(si|no|ese|esa|eso|este|esta|el primero|el segundo|la primera|la segunda|precio|tonos|colores|cuanto|cuanto vale|y ese|y esa|y el otro|y la otra)$/.test(mensajeNormalizado);
+    let consultaFallback = mensaje;
+
+    if (dependeDelContexto) {
+      const ultimoContexto = historial.slice(-2).map(item => item.content).filter(Boolean).join(" ");
+      consultaFallback = (ultimoContexto + " " + mensaje).trim();
+    }
+
+    const fallback = respuestaFallbackAsesora(consultaFallback, catalogo);
     return res.json({ respuesta: fallback.reply, pregunta: fallback.followUp, productos: productosVerificadosPorIds(fallback.productIds, catalogo), modo: "catalogo" });
   }
 
