@@ -347,6 +347,20 @@
        ======================================================= -->
 
   <script>
+    const ADMIN_KEY_STORAGE = "blusheaAdminApiKey";
+    function adminKey() {
+      let clave = sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
+      if (!clave) {
+        clave = window.prompt("Clave administrativa:") || "";
+        if (clave) sessionStorage.setItem(ADMIN_KEY_STORAGE, clave);
+      }
+      return clave;
+    }
+    function adminHeaders(extra = {}) {
+      const clave = adminKey();
+      return { ...extra, ...(clave ? { "x-admin-key": clave } : {}) };
+    }
+
 
 
     /* =====================================================
@@ -1317,7 +1331,7 @@
 
     async function cargarTarifasEnvio() {
       try {
-        const respuesta = await fetch("/api/admin/tarifas-envio");
+        const respuesta = await fetch("/api/admin/tarifas-envio", { headers: adminHeaders() });
         const tarifas = await respuesta.json();
         listaTarifasEnvio.innerHTML = tarifas.length
           ? tarifas.map(t => `
@@ -1337,7 +1351,7 @@
       const precio = Number(document.getElementById("tarifaPrecio").value);
       const respuesta = await fetch("/api/admin/tarifas-envio", {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: adminHeaders({"Content-Type":"application/json"}),
         body: JSON.stringify({barrio, precio})
       });
       const resultado = await respuesta.json().catch(() => ({}));
@@ -1351,7 +1365,7 @@
     });
 
     async function eliminarTarifaEnvio(clave) {
-      await fetch("/api/admin/tarifas-envio/" + clave, {method:"DELETE"});
+      await fetch("/api/admin/tarifas-envio/" + clave, {method:"DELETE", headers: adminHeaders()});
       await cargarTarifasEnvio();
     }
 
