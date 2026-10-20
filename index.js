@@ -2747,16 +2747,73 @@ function productosVerificadosPorIds(ids, catalogo) {
   }));
 }
 
+function normalizarAsesora(valor) {
+  return String(valor || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function puntajeProductoAsesora(q, producto) {
+  const nombre = normalizarAsesora(producto.nombre);
+  const categoria = normalizarAsesora(producto.categoria);
+  const palabras = q.split(" ").filter(x => x.length > 2 && !["quiero","saber","precio","cuanto","cuesta","vale","tiene","dime","del","los","las","una","uno","producto"].includes(x));
+  let score = 0;
+  for (const palabra of palabras) {
+    if (nombre.includes(palabra)) score += 5;
+    else if (categoria.includes(palabra)) score += 1;
+  }
+  if (q.includes("atenea") && nombre.includes("atenea")) score += 20;
+  if (q.includes("ruby rose") && nombre.includes("ruby rose")) score += 20;
+  return score;
+}
+
 function respuestaFallbackAsesora(mensaje, catalogo) {
-  const q = mensaje.toLowerCase();
+  const q = normalizarAsesora(mensaje);
+  const esPrecio = /\b(precio|cuanto cuesta|cuanto vale|valor)\b/.test(q);
+  const esTonos = /\b(tono|tonos|color|colores)\b/.test(q);
+  const esStock = /\b(stock|existencia|disponible|disponibilidad|hay)\b/.test(q);
+
+  const ranking = catalogo.map(p => ({ p, score: puntajeProductoAsesora(q, p) })).filter(x => x.score > 0).sort((x,y) => y.score - x.score);
+  const exacto = ranking.length && (ranking[0].score >= 10 || (ranking.length === 1 && ranking[0].score >= 5)) ? ranking[0].p : null;
+
+  if (exacto && esPrecio) {
+    return {
+      reply: "El " + exacto.nombre + " tiene un precio de $" + Number(exacto.precio || 0).toLocaleString("es-CO") + ".",
+      productIds: [exacto.id],
+      followUp: esTonos ? "" : "Si quieres, también puedo mostrarte los tonos disponibles."
+    };
+  }
+  if (exacto && esTonos) {
+    const tonos = Array.isArray(exacto.tonos) ? exacto.tonos : [];
+    return {
+      reply: tonos.length ? "Los tonos registrados para " + exacto.nombre + " son: " + tonos.join(", ") + "." : "En este momento no tengo tonos registrados para " + exacto.nombre + ".",
+      productIds: [exacto.id],
+      followUp: ""
+    };
+  }
+  if (exacto && esStock) {
+    const disponible = exacto.disponibleCompraReal !== false && (exacto.stock === null || exacto.stock > 0);
+    return {
+      reply: disponible ? "Sí, " + exacto.nombre + " aparece disponible en el catálogo." : exacto.nombre + " no aparece disponible para compra real en este momento.",
+      productIds: [exacto.id],
+      followUp: ""
+    };
+  }
+  if (exacto) {
+    return {
+      reply: "Encontré el producto que buscas: " + exacto.nombre + ". Cuesta $" + Number(exacto.precio || 0).toLocaleString("es-CO") + ".",
+      productIds: [exacto.id],
+      followUp: "¿Quieres que te cuente sus tonos o te ayude a saber cuál podría servirte?"
+    };
+  }
+
   let filtrados = catalogo;
-  if (/base|corrector|rostro|rubor|polvo|contorno|iluminador/.test(q)) filtrados = catalogo.filter(p => /base|corrector|rostro|rubor|polvo|contorno|iluminador/i.test(p.nombre+" "+p.categoria));
-  else if (/ojo|pestañ|sombra|delineador|ceja|rimel|rímel/.test(q)) filtrados = catalogo.filter(p => /ojo|pestañ|sombra|delineador|ceja|rimel|rímel/i.test(p.nombre+" "+p.categoria));
-  else if (/brocha|pincel|esponja/.test(q)) filtrados = catalogo.filter(p => /brocha|pincel|esponja/i.test(p.nombre+" "+p.categoria));
+  if (/base|corrector|rostro|rubor|polvo|contorno|iluminador/.test(q)) filtrados = catalogo.filter(p => /base|corrector|rostro|rubor|polvo|contorno|iluminador/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
+  else if (/ojo|pestana|sombra|delineador|ceja|rimel/.test(q)) filtrados = catalogo.filter(p => /ojo|pestana|sombra|delineador|ceja|rimel/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
+  else if (/brocha|pincel|esponja/.test(q)) filtrados = catalogo.filter(p => /brocha|pincel|esponja/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
+
   return {
-    reply: "Puedo orientarte con el catálogo mientras terminamos de conectar mi motor de IA. Cuéntame tu tipo de piel, qué producto buscas y tu presupuesto para afinar la recomendación.",
+    reply: filtrados.length ? "Encontré estas opciones relacionadas con lo que buscas. Dime cuál te interesa y te doy la información exacta." : "No encontré un producto exacto con ese nombre en el catálogo. Si me dices el nombre o la categoría, lo busco por ti.",
     productIds: filtrados.slice(0, 3).map(p => p.id),
-    followUp: "¿Qué resultado quieres lograr y cuánto te gustaría gastar?"
+    followUp: ""
   };
 }
 
