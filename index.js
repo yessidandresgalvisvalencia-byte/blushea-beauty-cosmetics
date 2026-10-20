@@ -2770,13 +2770,18 @@ function respuestaFallbackAsesora(mensaje, catalogo) {
   const esPrecio = /\b(precio|cuanto cuesta|cuanto vale|valor)\b/.test(q);
   const esTonos = /\b(tono|tonos|color|colores)\b/.test(q);
   const esStock = /\b(stock|existencia|disponible|disponibilidad|hay)\b/.test(q);
+  const esCompra = /\b(comprar|comprarlo|comprarla|pedido|carrito|agregar)\b/.test(q);
+  const esUso = /\b(como se usa|como usar|para que sirve|como aplic|aplicar|uso)\b/.test(q);
+  const esComparacion = /\b(compara|comparar|diferencia|mejor|versus| vs )\b/.test(" "+q+" ");
 
   const ranking = catalogo.map(p => ({ p, score: puntajeProductoAsesora(q, p) })).filter(x => x.score > 0).sort((x,y) => y.score - x.score);
   const exacto = ranking.length && (ranking[0].score >= 10 || (ranking.length === 1 && ranking[0].score >= 5)) ? ranking[0].p : null;
 
   if (exacto && esPrecio) {
+    const demo = exacto.disponibleCompraReal === false ? " Este producto está cargado como demostración y todavía no está habilitado para compra real." : "";
+    const tonosExtra = esTonos && Array.isArray(exacto.tonos) && exacto.tonos.length ? " Los tonos registrados son: " + exacto.tonos.join(", ") + "." : "";
     return {
-      reply: "El " + exacto.nombre + " tiene un precio de $" + Number(exacto.precio || 0).toLocaleString("es-CO") + ".",
+      reply: "El " + exacto.nombre + " tiene un precio de $" + Number(exacto.precio || 0).toLocaleString("es-CO") + "." + tonosExtra + demo,
       productIds: [exacto.id],
       followUp: esTonos ? "" : "Si quieres, también puedo mostrarte los tonos disponibles."
     };
@@ -2787,6 +2792,20 @@ function respuestaFallbackAsesora(mensaje, catalogo) {
       reply: tonos.length ? "Los tonos registrados para " + exacto.nombre + " son: " + tonos.join(", ") + "." : "En este momento no tengo tonos registrados para " + exacto.nombre + ".",
       productIds: [exacto.id],
       followUp: ""
+    };
+  }
+  if (exacto && esCompra) {
+    return {
+      reply: exacto.disponibleCompraReal === false ? exacto.nombre + " está visible como producto de demostración, pero todavía no está habilitado para compra real." : "Sí, puedes abrir " + exacto.nombre + " desde la tarjeta y continuar con la compra.",
+      productIds: [exacto.id],
+      followUp: ""
+    };
+  }
+  if (exacto && esUso) {
+    return {
+      reply: exacto.descripcion ? exacto.nombre + ": " + exacto.descripcion : "Puedo darte una orientación general de aplicación, pero el catálogo no tiene instrucciones específicas del fabricante para " + exacto.nombre + ".",
+      productIds: [exacto.id],
+      followUp: exacto.descripcion ? "¿Quieres que te explique cómo integrarlo en tu maquillaje?" : ""
     };
   }
   if (exacto && esStock) {
@@ -2802,6 +2821,15 @@ function respuestaFallbackAsesora(mensaje, catalogo) {
       reply: "Encontré el producto que buscas: " + exacto.nombre + ". Cuesta $" + Number(exacto.precio || 0).toLocaleString("es-CO") + ".",
       productIds: [exacto.id],
       followUp: "¿Quieres que te cuente sus tonos o te ayude a saber cuál podría servirte?"
+    };
+  }
+
+  if (esComparacion && ranking.length >= 2) {
+    const opciones = ranking.slice(0, 2).map(x => x.p);
+    return {
+      reply: opciones[0].nombre + " cuesta $" + Number(opciones[0].precio || 0).toLocaleString("es-CO") + " y " + opciones[1].nombre + " cuesta $" + Number(opciones[1].precio || 0).toLocaleString("es-CO") + ". Puedo compararlos mejor si me dices qué te importa más: acabado, cobertura, tonos o presupuesto.",
+      productIds: opciones.map(p => p.id),
+      followUp: ""
     };
   }
 
