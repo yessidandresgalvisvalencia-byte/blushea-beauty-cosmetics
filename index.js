@@ -2739,8 +2739,9 @@ function catalogoVerificadoAsesora() {
 }
 
 function productosVerificadosPorIds(ids, catalogo) {
-  const permitidos = new Set((Array.isArray(ids) ? ids : []).map(String));
-  return catalogo.filter(p => permitidos.has(String(p.id))).slice(0, 4).map(p => ({
+  const orden = (Array.isArray(ids) ? ids : []).map(String);
+  const porId = new Map(catalogo.map(p => [String(p.id), p]));
+  return orden.map(id => porId.get(id)).filter(Boolean).slice(0, 4).map(p => ({
     id: p.id, nombre: p.nombre, categoria: p.categoria, precio: p.precio,
     stock: p.stock, tonos: p.tonos, disponibleCompraReal: p.disponibleCompraReal,
     url: "/producto.html?id=" + encodeURIComponent(p.id)
@@ -2771,12 +2772,14 @@ function referenciaFallbackAsesora(mensaje, historial, catalogo) {
   if (!corta || !Array.isArray(historial) || !historial.length) return "";
 
   const contexto = historial.slice(-4).map(item => item && item.content ? item.content : "").join(" ");
-  const encontrados = catalogo.map(p => {
+  const contextoNormalizado = normalizarAsesora(contexto);
+  const encontrados = catalogo.map((p, indice) => {
     const nombre = normalizarAsesora(p.nombre || "");
     const palabras = nombre.split(" ").filter(x => x.length > 3);
-    const score = palabras.reduce((n, palabra) => n + (normalizarAsesora(contexto).includes(palabra) ? 1 : 0), 0);
-    return { p, score };
-  }).filter(x => x.score > 0).sort((a,b) => b.score - a.score);
+    const score = palabras.reduce((n, palabra) => n + (contextoNormalizado.includes(palabra) ? 1 : 0), 0);
+    const ultimaMencion = palabras.reduce((pos, palabra) => Math.max(pos, contextoNormalizado.lastIndexOf(palabra)), -1);
+    return { p, score, ultimaMencion, indice };
+  }).filter(x => x.score > 0).sort((a,b) => b.ultimaMencion - a.ultimaMencion || b.score - a.score || a.indice - b.indice);
 
   if (!encontrados.length) return "";
   const ordinalSegundo = /segundo|segunda/.test(q);
