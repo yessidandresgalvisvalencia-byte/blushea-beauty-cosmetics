@@ -3111,6 +3111,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "NUMEROS DE TONO: interpreta un numero como tono solo cuando el contexto inmediato habla de tonos o de un producto con tonos. No confundas precio, cantidad o numero de producto con tono.",
     "FORMATO DE PRECIO: presenta COP de manera natural para Colombia, por ejemplo $32.900, conservando el valor exacto del catalogo.",
     "MARCAS PARECIDAS: no fusiones marcas diferentes por similitud ortografica. Una correccion de marca debe estar suficientemente respaldada por las referencias reales del catalogo."
+    "TONOS DISPONIBLES: si pregunta que tonos hay de una referencia concreta, enumera todos los tonos verificados de esa referencia cuando la cantidad sea manejable; no mezcles tonos de otro producto.",
+    "TONO INEXISTENTE: si solicita un tono que no figura en la referencia, dilo claramente y no lo sustituyas sin permiso. Puedes mencionar tonos cercanos solo como alternativas, no como equivalentes.",
+    "CODIGO Y NOMBRE: cuando un tono tenga codigo y nombre, conserva ambos exactamente como aparecen en catalogo para evitar confusiones.",
+    "MISMO NUMERO DISTINTA MARCA: no asumas que el tono 02, Beige u otro nombre coincide entre marcas o formulas diferentes. Los sistemas de tonos no son universales.",
+    "EQUIVALENCIAS: si pide equivalencia desde otra marca y no existe una tabla verificada, orienta por profundidad/subtono y deja claro que es aproximado, nunca una equivalencia exacta.",
+    "CAMBIO DE TONO: si la clienta corrige su tono o dice que el anterior le quedo claro/oscuro/calido/frio, usa esa retroalimentacion para ajustar la orientacion sin inventar una correspondencia numerica.",
+    "PRUEBA DE TONO: para base recomienda evaluar mandibula/cuello y luz natural como orientacion general; para corrector adapta la prueba al objetivo sin garantizar match por pantalla.",
+    "PANTALLA Y FOTO: recuerda que iluminacion, camara y pantalla pueden alterar la percepcion del color; una foto no calibrada sirve como orientacion, no como medicion exacta."
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
