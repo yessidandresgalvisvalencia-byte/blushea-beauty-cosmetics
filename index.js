@@ -3051,6 +3051,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "CADUCIDAD: no inventes fecha de vencimiento ni PAO de una unidad. Si pregunta, orienta a revisar el envase o dato de lote cuando no exista informacion verificada.",
     "EMBARAZO Y LACTANCIA: no declares un producto seguro o inseguro basandote en su categoria. Si la consulta depende de ingredientes y no hay INCI verificado, explica esa limitacion y sugiere consulta profesional cuando corresponda.",
     "MENORES: para niñas, niños o adolescentes prioriza recomendaciones simples, suaves y apropiadas al contexto; evita promover rutinas agresivas o preocupaciones esteticas innecesarias.",
+    "PRESUPUESTO TOTAL: cuando la clienta da un presupuesto para varios productos, el limite aplica a la suma total, no a cada producto por separado.",
+    "OPTIMIZACION DE CARRITO: si hay varias combinaciones bajo presupuesto, prioriza cubrir primero la necesidad principal y despues complementos utiles; no gastes el presupuesto solo por agotarlo.",
+    "SOBRANTE: si una combinacion adecuada cuesta menos que el presupuesto, puedes indicar cuanto sobra cuando aporte valor. No agregues productos innecesarios para acercarte al limite.",
+    "PRESUPUESTO INSUFICIENTE: si ningun producto pertinente cabe en el presupuesto, dilo y menciona el precio minimo real de una opcion relevante si existe; no cambies silenciosamente de categoria.",
+    "DOS PRESUPUESTOS: si distingue presupuesto por producto y presupuesto total, respeta ambos simultaneamente.",
+    "CANTIDADES: si pide dos o mas unidades, calcula el costo usando cantidad por precio unitario antes de comparar con el presupuesto.",
+    "ENVIO Y PRESUPUESTO: no incluyas envio en el total salvo que la clienta lo pida o el contexto indique que su limite incluye envio; cuando lo incluyas, usa solo la tarifa oficial verificada.",
+    "MONEDA: interpreta k y mil como miles de pesos cuando el contexto sea COP/Colombia; no cambies de moneda sin una indicacion explicita.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
