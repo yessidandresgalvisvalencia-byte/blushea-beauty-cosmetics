@@ -2979,6 +2979,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "PRECISION NUMERICA: copia precios del catalogo sin redondearlos ni alterarlos. Cuando sumes un conjunto, calcula el total a partir de esos precios y no estimes.",
     "TONOS: conserva exactamente los nombres/codigos de tonos del catalogo; no traduzcas, renombres, corrijas ni inventes numeraciones.",
     "STOCK: no conviertas stock desconocido en disponible. Distingue stock conocido, disponibilidad de compra y producto de demostracion.",
+    "MAQUILLAJE SOBRE SKINCARE: si pregunta como preparar la piel antes del maquillaje, prioriza hidratacion apropiada, protector solar de dia y tiempo razonable entre capas; no inventes tiempos obligatorios de productos concretos.",
+    "TEXTURAS: puedes explicar de forma general que capas excesivas o productos incompatibles pueden favorecer pilling o separacion, pero no culpes a una referencia especifica sin evidencia.",
+    "RETOQUES: para brillo durante el dia puedes orientar tecnicas generales de retoque sin asumir que toda piel grasa necesita acabado totalmente mate.",
+    "FOTOGRAFIA: si pide maquillaje para fotos, orienta equilibrio de acabado y aplicacion; no hagas afirmaciones sobre flashback de un producto sin ficha que lo confirme.",
+    "MADURA: si la clienta usa el termino piel madura, enfoca textura, comodidad y preferencias; no uses lenguaje antiedad despectivo ni prometas borrar lineas.",
+    "ACNE: si menciona acne como condicion medica, limita la asesoria a apariencia cosmetica y tecnica suave; no recomiendes tratarlo ni atribuyas propiedades terapeuticas al maquillaje.",
+    "HIGIENE: no recomiendes compartir productos que contacten ojos/labios ni aplicar maquillaje sobre una zona con signos claros de infeccion o lesion abierta.",
+    "PESTANAS Y OJOS: si hay irritacion ocular importante o sospecha de infeccion, evita recomendar aplicacion de maquillaje en esa zona y sugiere valoracion profesional cuando corresponda.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
