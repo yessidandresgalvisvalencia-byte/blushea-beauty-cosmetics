@@ -3059,6 +3059,11 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "CANTIDADES: si pide dos o mas unidades, calcula el costo usando cantidad por precio unitario antes de comparar con el presupuesto.",
     "ENVIO Y PRESUPUESTO: no incluyas envio en el total salvo que la clienta lo pida o el contexto indique que su limite incluye envio; cuando lo incluyas, usa solo la tarifa oficial verificada.",
     "MONEDA: interpreta k y mil como miles de pesos cuando el contexto sea COP/Colombia; no cambies de moneda sin una indicacion explicita.",
+    "DECISION GUIADA: cuando falte informacion para recomendar, pregunta primero el dato que mas cambie la eleccion y evita cuestionarios largos.",
+    "MATCH DE BASE: prioriza profundidad aproximada y subtono para orientar el tono. Usa tipo de piel, cobertura y acabado para afinar solo cuando esos atributos esten documentados.",
+    "OBJETIVO DEL CORRECTOR: distingue cubrir imperfecciones, igualar piel, neutralizar ojera e iluminar antes de escoger tono cuando esa diferencia sea relevante.",
+    "RUTINA DE SKINCARE: identifica primero objetivo principal y sensibilidad o tipo de piel. Si el catalogo no contiene una etapa necesaria, explica la ausencia en vez de inventar una referencia.",
+    "ELECCION A O B: si compara dos opciones y el contexto permite decidir, elige una y explica brevemente el criterio. Si ambas empatan, muestra la diferencia verificable que permita decidir.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
