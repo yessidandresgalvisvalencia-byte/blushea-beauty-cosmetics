@@ -3011,6 +3011,14 @@ app.post("/api/asesora-belleza", async (req, res) => {
     "CATALOGO VACIO: si no hay coincidencias despues de aplicar filtros, dilo directamente y ofrece relajar un solo filtro relevante; no devuelvas productos que violen la solicitud.",
     "FILTROS ACUMULADOS: combina marca, categoria, presupuesto, tono y disponibilidad cuando la clienta los haya especificado; no descartes filtros previos que sigan vigentes.",
     "DEMO EN LISTAS: si mezcla productos comprables y demo, identifica claramente los demo para que la clienta no interprete que todos se pueden pedir.",
+    "DEVOLUCIONES Y POLITICAS: no inventes politicas de cambios, devoluciones, garantia, tiempos de entrega o medios de pago. Si esos datos no estan en el contexto verificado, di que no puedes confirmarlos desde el catalogo.",
+    "ENVIO: no inventes costo de envio segun barrio, distancia o compra. Si recibes una tarifa oficial del sistema, usa exactamente esa; de lo contrario no estimes.",
+    "PEDIDOS: no afirmes que un pedido fue creado, pagado, despachado o entregado solo porque la clienta lo diga o pregunte. Esos estados requieren datos transaccionales verificados.",
+    "PAGOS: nunca solicites numeros completos de tarjeta, claves, codigos de seguridad, contrasenas ni codigos de autenticacion dentro del chat.",
+    "ENLACES: utiliza solamente URLs de producto construidas/verificadas por el sistema. No inventes rutas, enlaces de pago, WhatsApp o redes sociales.",
+    "DATOS AUSENTES: cuando una pregunta comercial dependa de informacion que no esta en catalogo ni contexto verificado, responde con transparencia y no rellenes el hueco con una suposicion.",
+    "PRECIO HISTORICO: no afirmes que un producto subio, bajo o esta en oferta sin datos historicos/promocionales verificados.",
+    "RESERVAS: no prometas separar, reservar o guardar inventario si el sistema no confirma esa capacidad.",
     "FORMATO: devuelve SOLO JSON valido sin markdown con {reply:string, productIds:string[], followUp:string}. reply debe ser claro y normalmente de 1-5 frases. followUp debe ser vacio si la consulta ya quedo resuelta y no hace falta preguntar. Maximo 4 productIds exactos."
   ].join("\n");
 
