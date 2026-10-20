@@ -2719,6 +2719,117 @@ app.use(
 );
 
 
+
+/* =========================================================
+   ASESORA VIRTUAL DE BELLEZA - IA + CATALOGO VERIFICADO
+   ========================================================= */
+const beautyRateLimit = new Map();
+
+function catalogoVerificadoAsesora() {
+  return CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO).map(producto => ({
+    id: String(producto.id),
+    nombre: producto.nombre,
+    categoria: producto.categoria,
+    descripcion: producto.descripcion,
+    precio: Number(producto.precio || 0),
+    stock: Number.isFinite(Number(producto.stock)) ? Number(producto.stock) : null,
+    tonos: Array.isArray(producto.tonos) ? producto.tonos : (Array.isArray(producto.variantes) ? producto.variantes.map(v => v.nombre).filter(Boolean) : []),
+    disponibleCompraReal: producto.soloDemostracion !== true
+  }));
+}
+
+function productosVerificadosPorIds(ids, catalogo) {
+  const permitidos = new Set((Array.isArray(ids) ? ids : []).map(String));
+  return catalogo.filter(p => permitidos.has(String(p.id))).slice(0, 4).map(p => ({
+    id: p.id, nombre: p.nombre, categoria: p.categoria, precio: p.precio,
+    stock: p.stock, tonos: p.tonos, disponibleCompraReal: p.disponibleCompraReal,
+    url: "/producto.html?id=" + encodeURIComponent(p.id)
+  }));
+}
+
+function respuestaFallbackAsesora(mensaje, catalogo) {
+  const q = mensaje.toLowerCase();
+  let filtrados = catalogo;
+  if (/base|corrector|rostro|rubor|polvo|contorno|iluminador/.test(q)) filtrados = catalogo.filter(p => /base|corrector|rostro|rubor|polvo|contorno|iluminador/i.test(p.nombre+" "+p.categoria));
+  else if (/ojo|pestañ|sombra|delineador|ceja|rimel|rímel/.test(q)) filtrados = catalogo.filter(p => /ojo|pestañ|sombra|delineador|ceja|rimel|rímel/i.test(p.nombre+" "+p.categoria));
+  else if (/brocha|pincel|esponja/.test(q)) filtrados = catalogo.filter(p => /brocha|pincel|esponja/i.test(p.nombre+" "+p.categoria));
+  return {
+    reply: "Puedo orientarte con el catálogo mientras terminamos de conectar mi motor de IA. Cuéntame tu tipo de piel, qué producto buscas y tu presupuesto para afinar la recomendación.",
+    productIds: filtrados.slice(0, 3).map(p => p.id),
+    followUp: "¿Qué resultado quieres lograr y cuánto te gustaría gastar?"
+  };
+}
+
+app.post("/api/asesora-belleza", async (req, res) => {
+  const mensaje = textoSeguro(req.body && req.body.mensaje, 600);
+  const historial = Array.isArray(req.body && req.body.historial) ? req.body.historial.slice(-12).map(item => ({
+    role: item && item.role === "assistant" ? "assistant" : "user",
+    content: textoSeguro(item && item.content, 700)
+  })).filter(item => item.content) : [];
+  if (!mensaje) return res.status(400).json({ mensaje: "Escribe una consulta para tu asesora." });
+
+  const ip = String(req.ip || (req.socket && req.socket.remoteAddress) || "anon");
+  const ahora = Date.now();
+  const recientes = (beautyRateLimit.get(ip) || []).filter(t => ahora - t < 60000);
+  if (recientes.length >= 20) return res.status(429).json({ mensaje: "Has enviado muchos mensajes. Intenta de nuevo en un momento." });
+  recientes.push(ahora);
+  beautyRateLimit.set(ip, recientes);
+
+  const catalogo = catalogoVerificadoAsesora();
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    const fallback = respuestaFallbackAsesora(mensaje, catalogo);
+    return res.json({ respuesta: fallback.reply, pregunta: fallback.followUp, productos: productosVerificadosPorIds(fallback.productIds, catalogo), modo: "catalogo" });
+  }
+
+  const catalogoIA = catalogo.map(p => ({ id:p.id, nombre:p.nombre, categoria:p.categoria, descripcion:p.descripcion, precioCOP:p.precio, stock:p.stock, tonos:p.tonos, compraReal:p.disponibleCompraReal }));
+  const instrucciones = [
+    "Eres la asesora virtual de belleza de BLUSHEA, maquilladora profesional, especialista cosmetica en skincare y asesora de ventas.",
+    "Habla en español colombiano calido, femenino, elegante y natural. No repitas saludos.",
+    "Haz maximo una pregunta util por turno cuando falte informacion. Usa lo que la clienta ya dijo en el historial.",
+    "Para maquillaje pregunta solo lo necesario: producto, acabado, tipo de piel, tono o subtono si aplica y presupuesto.",
+    "Para skincare orienta sobre rutinas e ingredientes de forma cosmetica. Nunca diagnostiques, prescribas ni prometas resultados.",
+    "Solo recomienda productos presentes en el catalogo entregado. Nunca inventes nombres, tonos, precios, stock o disponibilidad.",
+    "No afirmes que un tono es coincidencia exacta sin informacion suficiente. Explica brevemente por que recomiendas cada opcion.",
+    "Si compraReal es false, indicalo como producto de demostracion y no lo presentes como disponible para compra real.",
+    "Devuelve SOLO JSON valido: {reply:string, productIds:string[], followUp:string}. Maximo 4 IDs exactos."
+  ].join("\n");
+
+  const input = historial.concat([
+    { role: "user", content: mensaje },
+    { role: "user", content: "CATALOGO VERIFICADO - FUENTE DE VERDAD:\n" + JSON.stringify(catalogoIA) }
+  ]);
+
+  try {
+    const respuestaOpenAI = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: process.env.OPENAI_BEAUTY_MODEL || "gpt-6-luna", instructions: instrucciones, input, max_output_tokens: 650 }),
+      signal: AbortSignal.timeout(18000)
+    });
+    if (!respuestaOpenAI.ok) {
+      const detalle = await respuestaOpenAI.text();
+      console.error("Asesora IA:", respuestaOpenAI.status, detalle.slice(0, 500));
+      throw new Error("Proveedor IA no disponible");
+    }
+    const data = await respuestaOpenAI.json();
+    const outputText = data.output_text || (Array.isArray(data.output) ? data.output.flatMap(o => o.content || []).map(c => c.text || "").join("") : "");
+    let parsed;
+    try { parsed = JSON.parse(outputText.replace(/^\x60\x60\x60json\s*|\s*\x60\x60\x60$/g, "")); }
+    catch { parsed = { reply: outputText, productIds: [], followUp: "" }; }
+    return res.json({
+      respuesta: textoSeguro(parsed && parsed.reply, 1600) || "Cuéntame un poquito más sobre lo que buscas y te ayudo a elegir.",
+      pregunta: textoSeguro(parsed && parsed.followUp, 300),
+      productos: productosVerificadosPorIds(parsed && parsed.productIds, catalogo),
+      modo: "ia"
+    });
+  } catch (error) {
+    console.error("Error asesora virtual:", error.message);
+    const fallback = respuestaFallbackAsesora(mensaje, catalogo);
+    return res.json({ respuesta: fallback.reply, pregunta: fallback.followUp, productos: productosVerificadosPorIds(fallback.productIds, catalogo), modo: "catalogo" });
+  }
+});
+
 /* =========================================================
    404 API
    ========================================================= */
