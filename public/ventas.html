@@ -25,10 +25,33 @@
 </main>
 
 <script>
+const ADMIN_KEY_STORAGE = "blusheaAdminApiKey";
+function adminKey() {
+  let clave = sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
+  if (!clave) {
+    clave = window.prompt("Clave administrativa:") || "";
+    if (clave) sessionStorage.setItem(ADMIN_KEY_STORAGE, clave);
+  }
+  return clave;
+}
+function adminHeaders() {
+  const clave = adminKey();
+  return clave ? { "x-admin-key": clave } : {};
+}
+
+function escaparHTML(valor) {
+  return String(valor ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
 async function cargarVentas() {
   const contenedor = document.getElementById("listaVentas");
 
-  const respuesta = await fetch("/api/ventas");
+  const respuesta = await fetch("/api/ventas", { headers: adminHeaders(), cache: "no-store" });
+  if (!respuesta.ok) {
+    if (respuesta.status === 401) sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+    contenedor.innerHTML = '<div class="empty-state"><h3>No fue posible acceder al historial de ventas.</h3></div>';
+    return;
+  }
   const ventas = await respuesta.json();
 
   contenedor.innerHTML = "";
@@ -50,17 +73,17 @@ async function cargarVentas() {
           <span>Entregado</span>
         </div>
 
-        <p><strong>Cliente:</strong> ${venta.cliente.nombre}</p>
-        <p><strong>Teléfono:</strong> ${venta.cliente.telefono}</p>
-        <p><strong>Dirección:</strong> ${venta.cliente.direccion}, ${venta.cliente.barrio}</p>
-        <p><strong>Fecha venta:</strong> ${venta.fechaEntregado}</p>
+        <p><strong>Cliente:</strong> ${escaparHTML(venta.cliente.nombre)}</p>
+        <p><strong>Teléfono:</strong> ${escaparHTML(venta.cliente.telefono)}</p>
+        <p><strong>Dirección:</strong> ${escaparHTML(venta.cliente.direccion)}, ${escaparHTML(venta.cliente.barrio)}</p>
+        <p><strong>Fecha venta:</strong> ${escaparHTML(venta.fechaEntregado)}</p>
 
         ${venta.productos.map(p => `
           <div class="order-product">
-            <img src="${p.imagen}">
+            <img src="${escaparHTML(p.imagen)}">
             <div>
-              <strong>${p.nombre}</strong>
-              ${p.tono ? `<p>Tono: ${p.tono}</p>` : ""}
+              <strong>${escaparHTML(p.nombre)}</strong>
+              ${p.tono ? `<p>Tono: ${escaparHTML(p.tono)}</p>` : ""}
               <p>Cantidad: ${p.cantidad}</p>
             </div>
           </div>
