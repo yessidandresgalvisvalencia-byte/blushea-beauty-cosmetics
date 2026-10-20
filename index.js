@@ -2765,6 +2765,25 @@ function puntajeProductoAsesora(q, producto) {
   return score;
 }
 
+function referenciaFallbackAsesora(mensaje, historial, catalogo) {
+  const q = normalizarAsesora(mensaje);
+  const corta = /^(ese|esa|eso|este|esta|el primero|el segundo|la primera|la segunda|el anterior|la anterior|el otro|la otra|y ese|y esa|precio|tonos|colores|cuanto|cuanto vale)$/.test(q);
+  if (!corta || !Array.isArray(historial) || !historial.length) return "";
+
+  const contexto = historial.slice(-4).map(item => item && item.content ? item.content : "").join(" ");
+  const encontrados = catalogo.map(p => {
+    const nombre = normalizarAsesora(p.nombre || "");
+    const palabras = nombre.split(" ").filter(x => x.length > 3);
+    const score = palabras.reduce((n, palabra) => n + (normalizarAsesora(contexto).includes(palabra) ? 1 : 0), 0);
+    return { p, score };
+  }).filter(x => x.score > 0).sort((a,b) => b.score - a.score);
+
+  if (!encontrados.length) return "";
+  const ordinalSegundo = /segundo|segunda/.test(q);
+  const elegido = ordinalSegundo && encontrados[1] ? encontrados[1].p : encontrados[0].p;
+  return elegido && elegido.nombre ? elegido.nombre : "";
+}
+
 function presupuestoFallbackAsesora(texto) {
   const q = normalizarAsesora(texto);
   const match = q.match(/(?:presupuesto|tengo|hasta|maximo|menos de|por debajo de|no mas de)?\s*\$?\s*(\d{1,7}(?:[.,]\d{3})?|\d+(?:[.,]\d+)?)\s*(k|mil)?\b/);
@@ -2929,8 +2948,13 @@ app.post("/api/asesora-belleza", async (req, res) => {
     let consultaFallback = mensaje;
 
     if (dependeDelContexto) {
-      const ultimoContexto = historial.slice(-2).map(item => item.content).filter(Boolean).join(" ");
-      consultaFallback = (ultimoContexto + " " + mensaje).trim();
+      const productoReferenciado = referenciaFallbackAsesora(mensaje, historial, catalogo);
+      if (productoReferenciado) {
+        consultaFallback = (mensaje + " " + productoReferenciado).trim();
+      } else {
+        const ultimoContexto = historial.slice(-2).map(item => item.content).filter(Boolean).join(" ");
+        consultaFallback = (ultimoContexto + " " + mensaje).trim();
+      }
     }
 
     const fallback = respuestaFallbackAsesora(consultaFallback, catalogo);
