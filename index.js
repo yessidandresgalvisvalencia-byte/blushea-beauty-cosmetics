@@ -1869,46 +1869,32 @@ app.post(
         });
       }
 
-      const productos =
-        req.body.productos.map(
-          producto => ({
+      // Nunca confiamos en nombre/precio/imagen enviados por el navegador.
+      // El servidor reconstruye cada línea desde su catálogo autorizado.
+      const catalogoPedido = CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO);
+      const productos = req.body.productos.map(producto => {
+        const oficial = catalogoPedido.find(item => String(item.id) === String(producto.id));
+        if (!oficial || oficial.soloDemostracion === true) return null;
 
-            id:
-              producto.id,
+        const tonoSolicitado = textoSeguro(producto.tono, 80);
+        const tonosOficiales = Array.isArray(oficial.tonos)
+          ? oficial.tonos.map(String)
+          : (Array.isArray(oficial.variantes) ? oficial.variantes.map(v => String(v && v.nombre || "")).filter(Boolean) : []);
+        const tono = tonoSolicitado && tonosOficiales.includes(tonoSolicitado) ? tonoSolicitado : "";
 
-            nombre:
-              textoSeguro(
-                producto.nombre,
-                150
-              ),
-
-            precio:
-              Number(
-                producto.precio
-              ),
-
-            cantidad:
-              Number(
-                producto.cantidad
-              ),
-
-            tono:
-              textoSeguro(
-                producto.tono,
-                80
-              ),
-
-            imagen:
-              textoSeguro(
-                producto.imagen,
-                500
-              )
-
-          })
-        );
+        return {
+          id: oficial.id,
+          nombre: textoSeguro(oficial.nombre, 150),
+          precio: Number(oficial.precio),
+          cantidad: Number(producto.cantidad),
+          tono,
+          imagen: textoSeguro(oficial.imagen || (Array.isArray(oficial.imagenes) ? oficial.imagenes[0] : ""), 500)
+        };
+      });
 
 
       const productosValidos = productos.every(producto =>
+        producto &&
         producto.nombre &&
         Number.isFinite(producto.precio) &&
         producto.precio >= 0 &&
@@ -2004,7 +1990,7 @@ app.post(
 
         distanciaEnvioKm: Number.isFinite(distanciaPedidoKm) ? Number(distanciaPedidoKm.toFixed(2)) : null,
         distanciaCobradaEnvioKm: distanciaCobradaPedidoKm,
-        precioKmEnvio: PRECIO_KM,
+        precioKmEnvio: null,
 
         estado:
           "Pendiente"
