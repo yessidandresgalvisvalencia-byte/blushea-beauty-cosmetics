@@ -2852,6 +2852,20 @@ function respuestaFallbackAsesora(mensaje, catalogo) {
   else if (/skincare|serum|hidratante|limpiador|micelar|tonico|protector solar|mascarilla|exfoliante/.test(q)) filtrados = catalogo.filter(p => /skincare|serum|hidratante|limpiador|micelar|tonico|protector solar|mascarilla|exfoliante/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
   else if (/brocha|pincel|esponja/.test(q)) filtrados = catalogo.filter(p => /brocha|pincel|esponja/i.test(normalizarAsesora(p.nombre+" "+p.categoria)));
 
+  const exclusionesFallback = [];
+  if (/\b(?:no|sin)\s+(?:quiero\s+)?correctores?\b/.test(q)) exclusionesFallback.push("corrector");
+  if (/\b(?:no|sin)\s+(?:quiero\s+)?bases?\b/.test(q)) exclusionesFallback.push("base");
+  if (/\b(?:no|sin)\s+(?:quiero\s+)?skincare\b/.test(q)) exclusionesFallback.push("skincare");
+  if (/\b(?:no|sin)\s+ruby rose\b/.test(q)) exclusionesFallback.push("ruby rose");
+  if (/\b(?:no|sin)\s+atenea\b/.test(q)) exclusionesFallback.push("atenea");
+
+  if (exclusionesFallback.length) {
+    filtrados = filtrados.filter(p => {
+      const textoProducto = normalizarAsesora((p.nombre || "") + " " + (p.categoria || ""));
+      return !exclusionesFallback.some(termino => textoProducto.includes(termino));
+    });
+  }
+
   if (presupuestoDetectado) {
     filtrados = filtrados.filter(p => Number(p.precio || 0) <= presupuestoDetectado);
     filtrados.sort((a,b) => Number(a.precio || 0) - Number(b.precio || 0));
