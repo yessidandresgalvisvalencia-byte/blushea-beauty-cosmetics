@@ -222,77 +222,14 @@
       }
 
 
-      /* -----------------------------------------------------
-         PEDIDOS ACTIVOS
-         ----------------------------------------------------- */
+      const respuesta = await fetch(
+        `/api/seguimiento/${encodeURIComponent(id)}`,
+        { cache: "no-store" }
+      );
 
-      const respuestaPedido =
-        await fetch(
-          `/api/pedidos/${encodeURIComponent(id)}`,
-          {
-            cache: "no-store"
-          }
-        );
-
-
-      if (
-        respuestaPedido.ok
-      ) {
-
-        return await
-          respuestaPedido.json();
-
-      }
-
-
-      /* -----------------------------------------------------
-         SI YA FUE ENTREGADO, BUSCAR EN VENTAS
-         ----------------------------------------------------- */
-
-      const ventasRespuesta =
-        await fetch(
-          "/api/ventas",
-          {
-            cache: "no-store"
-          }
-        );
-
-
-      if (
-        !ventasRespuesta.ok
-      ) {
-
-        throw new Error(
-          "ERROR_VENTAS"
-        );
-
-      }
-
-
-      const ventas =
-        await ventasRespuesta.json();
-
-
-      if (
-        !Array.isArray(ventas)
-      ) {
-
-        return null;
-
-      }
-
-
-      const pedido =
-        ventas.find(
-          venta =>
-            String(venta.id) ===
-            String(id)
-        );
-
-
-      return pedido || null;
-
-    }
+      if (respuesta.ok) return await respuesta.json();
+      if (respuesta.status === 404) throw new Error("NO_ENCONTRADO");
+      throw new Error("ERROR_SERVIDOR");
 
 
     /* =====================================================
