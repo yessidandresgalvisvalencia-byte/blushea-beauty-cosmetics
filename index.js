@@ -1994,6 +1994,10 @@ app.post(
         id:
           Date.now(),
 
+        // Código público no predecible para enlaces de seguimiento.
+        seguimientoToken:
+          crypto.randomBytes(24).toString("hex"),
+
         fecha:
           new Date()
             .toLocaleString(
@@ -2122,6 +2126,7 @@ app.get(
 
 app.get(
   "/api/pedidos/:id",
+  exigirAdmin,
   (req, res) => {
 
     try {
@@ -2165,13 +2170,13 @@ app.get(
         fecha: pedido.fecha,
         estado: pedido.estado,
         cliente: {
-          nombre: textoSeguro(pedido.cliente && pedido.cliente.nombre, 80)
+          nombre: textoSeguro(pedidoLegado.cliente && pedidoLegado.cliente.nombre, 80)
             .split(/\s+/)
             .filter(Boolean)
             .slice(0, 1)
             .join(" ")
         },
-        productos: Array.isArray(pedido.productos) ? pedido.productos.map(producto => ({
+        productos: Array.isArray(pedidoLegado.productos) ? pedidoLegado.productos.map(producto => ({
           id: producto.id,
           nombre: producto.nombre,
           cantidad: producto.cantidad,
@@ -2213,32 +2218,42 @@ app.get(
 
 app.get("/api/seguimiento/:id", (req, res) => {
   try {
-    const id = String(req.params.id || "");
+    const token = String(req.params.id || "");
     const activos = leerJSON(pedidosPath);
     const entregados = leerJSON(ventasPath);
-    const pedido = activos.concat(entregados).find(item => String(item.id) === id);
+    const todos = activos.concat(entregados);
+    const pedido = todos.find(item =>
+      item.seguimientoToken && String(item.seguimientoToken) === token
+    );
 
-    if (!pedido) return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    // Compatibilidad temporal con pedidos antiguos: solo admite el ID legado
+    // si no existe ningún token nuevo en ese pedido. Los pedidos nuevos nunca
+    // pueden consultarse públicamente por su ID interno.
+    const pedidoLegado = pedido || todos.find(item =>
+      !item.seguimientoToken && String(item.id) === token
+    );
+
+    if (!pedidoLegado) return res.status(404).json({ mensaje: "Pedido no encontrado" });
 
     return res.json({
-      id: pedido.id,
-      fecha: pedido.fecha,
-      fechaEntregado: pedido.fechaEntregado || null,
-      estado: pedido.estado,
+      id: pedidoLegado.id,
+      fecha: pedidoLegado.fecha,
+      fechaEntregado: pedidoLegado.fechaEntregado || null,
+      estado: pedidoLegado.estado,
       cliente: {
-        nombre: textoSeguro(pedido.cliente && pedido.cliente.nombre, 80)
+        nombre: textoSeguro(pedidoLegado.cliente && pedidoLegado.cliente.nombre, 80)
           .split(/\s+/).filter(Boolean).slice(0, 1).join(" ")
       },
-      productos: Array.isArray(pedido.productos) ? pedido.productos.map(producto => ({
+      productos: Array.isArray(pedidoLegado.productos) ? pedidoLegado.productos.map(producto => ({
         id: producto.id,
         nombre: producto.nombre,
         cantidad: producto.cantidad,
         tono: producto.tono,
         imagen: producto.imagen
       })) : [],
-      subtotal: pedido.subtotal,
-      envio: pedido.envio,
-      total: pedido.total
+      subtotal: pedidoLegado.subtotal,
+      envio: pedidoLegado.envio,
+      total: pedidoLegado.total
     });
   } catch (error) {
     console.error("Error consultando seguimiento:", error);
@@ -2651,13 +2666,13 @@ app.post(
             back_urls: {
 
               success:
-                `${baseUrl}/seguimiento.html?id=${encodeURIComponent(pedido.id)}`,
+                `${baseUrl}/seguimiento.html?id=${encodeURIComponent(pedido.seguimientoToken || pedido.id)}`,
 
               failure:
                 `${baseUrl}/carrito.html`,
 
               pending:
-                `${baseUrl}/seguimiento.html?id=${encodeURIComponent(pedido.id)}`
+                `${baseUrl}/seguimiento.html?id=${encodeURIComponent(pedido.seguimientoToken || pedido.id)}`
 
             },
 
