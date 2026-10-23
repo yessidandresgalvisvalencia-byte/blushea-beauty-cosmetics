@@ -29,7 +29,8 @@ const {
 
 const {
   MercadoPagoConfig,
-  Preference
+  Preference,
+  Payment
 } = require("mercadopago");
 
 
@@ -92,6 +93,7 @@ const MERCADO_PAGO_ACCESS_TOKEN =
   process.env.MERCADO_PAGO_ACCESS_TOKEN;
 
 let preference = null;
+let paymentClient = null;
 
 
 if (MERCADO_PAGO_ACCESS_TOKEN) {
@@ -104,6 +106,9 @@ if (MERCADO_PAGO_ACCESS_TOKEN) {
 
   preference =
     new Preference(mpClient);
+
+  paymentClient =
+    new Payment(mpClient);
 
 } else {
 
@@ -2748,9 +2753,6 @@ app.use(
    ========================================================= */
 
 app.post("/api/mercadopago/webhook", async (req, res) => {
-  // Respondemos rápido al proveedor. La verificación del pago debe hacerse
-  // consultando Mercado Pago con credenciales del servidor; nunca confiando
-  // en parámetros de la URL de retorno del navegador.
   const tipo = textoSeguro((req.body && req.body.type) || (req.query && req.query.type), 80);
   const dataId = textoSeguro(
     (req.body && req.body.data && req.body.data.id) ||
@@ -2758,12 +2760,72 @@ app.post("/api/mercadopago/webhook", async (req, res) => {
     120
   );
 
-  if (!tipo || !dataId) {
+  // Webhooks irrelevantes o incompletos se reconocen sin modificar pedidos.
+  if (!tipo || !dataId || tipo !== "payment") {
     return res.status(200).json({ recibido: true });
   }
 
-  console.log("Mercado Pago webhook recibido:", tipo, dataId);
-  return res.status(200).json({ recibido: true });
+  if (!paymentClient) {
+    console.error("Webhook Mercado Pago: cliente de pagos no configurado.");
+    return res.status(503).json({ recibido: false });
+  }
+
+  try {
+    // Fuente de verdad: API de Mercado Pago autenticada desde el servidor.
+    const pago = await paymentClient.get({ id: dataId });
+    const pedidoId = textoSeguro(pago && pago.external_reference, 120);
+    const estadoPago = String(pago && pago.status || "").toLowerCase();
+    const montoPagado = Number(pago && pago.transaction_amount);
+
+    if (!pedidoId || estadoPago !== "approved" || !Number.isFinite(montoPagado)) {
+      return res.status(200).json({ recibido: true });
+    }
+
+    const pedidos = leerJSON(pedidosPath);
+    const pedido = pedidos.find(item => String(item.id) === String(pedidoId));
+    if (!pedido) {
+      console.warn("Webhook Mercado Pago: pedido no encontrado", pedidoId);
+      return res.status(200).json({ recibido: true });
+    }
+
+    const catalogoPago = CATALOGO_MAQUILLAJE_PROXIMAMENTE.concat(CATALOGO_ACCESORIOS_DOCUMENTO);
+    let subtotalOficial = 0;
+    for (const linea of pedido.productos || []) {
+      const oficial = catalogoPago.find(item => String(item.id) === String(linea.id));
+      const cantidad = Number(linea.cantidad);
+      const precio = oficial ? Number(oficial.precio) : NaN;
+      if (!oficial || oficial.soloDemostracion === true || !Number.isInteger(cantidad) || cantidad < 1 || !Number.isFinite(precio)) {
+        console.error("Webhook Mercado Pago: pedido no verificable", pedidoId);
+        return res.status(200).json({ recibido: true });
+      }
+      subtotalOficial += precio * cantidad;
+    }
+
+    const totalOficial = subtotalOficial + TARIFA_PLANA_ENVIO;
+    if (Math.abs(montoPagado - totalOficial) > 0.01) {
+      console.error("Webhook Mercado Pago: monto no coincide", { pedidoId, montoPagado, totalOficial });
+      return res.status(200).json({ recibido: true });
+    }
+
+    // Idempotencia: una notificación repetida no vuelve a mutar el pedido.
+    if (pedido.pago && String(pedido.pago.id) === String(dataId) && pedido.pago.estado === "approved") {
+      return res.status(200).json({ recibido: true });
+    }
+
+    pedido.pago = {
+      id: String(dataId),
+      estado: "approved",
+      monto: montoPagado,
+      verificadoEn: new Date().toISOString()
+    };
+    if (pedido.estado === "Pendiente") pedido.estado = "Confirmado";
+    guardarJSON(pedidosPath, pedidos);
+
+    return res.status(200).json({ recibido: true });
+  } catch (error) {
+    console.error("Error verificando webhook Mercado Pago:", error.message);
+    return res.status(500).json({ recibido: false });
+  }
 });
 
 
