@@ -2208,6 +2208,46 @@ app.get(
 
 
 /* =========================================================
+   API - SEGUIMIENTO PUBLICO (ACTIVOS + ENTREGADOS)
+   ========================================================= */
+
+app.get("/api/seguimiento/:id", (req, res) => {
+  try {
+    const id = String(req.params.id || "");
+    const activos = leerJSON(pedidosPath);
+    const entregados = leerJSON(ventasPath);
+    const pedido = activos.concat(entregados).find(item => String(item.id) === id);
+
+    if (!pedido) return res.status(404).json({ mensaje: "Pedido no encontrado" });
+
+    return res.json({
+      id: pedido.id,
+      fecha: pedido.fecha,
+      fechaEntregado: pedido.fechaEntregado || null,
+      estado: pedido.estado,
+      cliente: {
+        nombre: textoSeguro(pedido.cliente && pedido.cliente.nombre, 80)
+          .split(/\s+/).filter(Boolean).slice(0, 1).join(" ")
+      },
+      productos: Array.isArray(pedido.productos) ? pedido.productos.map(producto => ({
+        id: producto.id,
+        nombre: producto.nombre,
+        cantidad: producto.cantidad,
+        tono: producto.tono,
+        imagen: producto.imagen
+      })) : [],
+      subtotal: pedido.subtotal,
+      envio: pedido.envio,
+      total: pedido.total
+    });
+  } catch (error) {
+    console.error("Error consultando seguimiento:", error);
+    return res.status(500).json({ mensaje: "Error consultando seguimiento" });
+  }
+});
+
+
+/* =========================================================
    ESTADOS PERMITIDOS
    ========================================================= */
 
