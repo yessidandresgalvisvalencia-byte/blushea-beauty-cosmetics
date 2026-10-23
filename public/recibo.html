@@ -22,7 +22,7 @@ async function cargarRecibo() {
   const id = params.get("id");
 
   try {
-    const respuesta = await fetch(`/api/pedidos/${id}`);
+    const respuesta = await fetch(`/api/seguimiento/${encodeURIComponent(id)}`);
     let pedido = await respuesta.json();
 
     if (!respuesta.ok) {
