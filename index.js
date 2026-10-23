@@ -2158,9 +2158,30 @@ app.get(
       }
 
 
-      res.json(
-        pedido
-      );
+      // Seguimiento público: nunca exponer teléfono, dirección u otros
+      // datos privados del cliente solo por conocer el ID del pedido.
+      res.json({
+        id: pedido.id,
+        fecha: pedido.fecha,
+        estado: pedido.estado,
+        cliente: {
+          nombre: textoSeguro(pedido.cliente && pedido.cliente.nombre, 80)
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 1)
+            .join(" ")
+        },
+        productos: Array.isArray(pedido.productos) ? pedido.productos.map(producto => ({
+          id: producto.id,
+          nombre: producto.nombre,
+          cantidad: producto.cantidad,
+          tono: producto.tono,
+          imagen: producto.imagen
+        })) : [],
+        subtotal: pedido.subtotal,
+        envio: pedido.envio,
+        total: pedido.total
+      });
 
 
     } catch (error) {
