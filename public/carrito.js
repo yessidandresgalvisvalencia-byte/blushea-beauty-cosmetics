@@ -1395,6 +1395,10 @@ botonConfirmarPedido?.addEventListener(
       const pedidoId =
         resultado.pedido.id;
 
+      const seguimientoId =
+        resultado.pedido.seguimientoToken ||
+        pedidoId;
+
 
       /* =====================================================
          2. CREAR PAGO EN MERCADO PAGO
@@ -1469,7 +1473,7 @@ botonConfirmarPedido?.addEventListener(
 
         window.location.href =
           `/seguimiento.html?id=${encodeURIComponent(
-            pedidoId
+            seguimientoId
           )}`;
 
 
@@ -1498,7 +1502,7 @@ botonConfirmarPedido?.addEventListener(
       localStorage.setItem(
         "ultimoPedidoBlushea",
         String(
-          pedidoId
+          seguimientoId
         )
       );
 
